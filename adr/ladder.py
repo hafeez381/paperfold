@@ -47,7 +47,7 @@ def outline(doc, here):
     return "\n".join(rows)
 
 
-def prompt_for(doc, chunk):
+def _context(doc, chunk):
     U, A = doc["units"], doc["atoms"]
     abstract = " ".join(plain(U[u]["toks"], A) for u in doc["chunks"][0]["units"]) if doc["chunks"] and doc["chunks"][0]["id"] == "abstract" else ""
     blocks = []
@@ -62,6 +62,12 @@ def prompt_for(doc, chunk):
         lines = [f"[U{n}] {kind}"] + [f"  {i}: {plain(u['toks'][s:e], A)}" for i, (s, e) in enumerate(u["sents"])]
         blocks.append("\n".join(lines))
     head = f"{chunk['num']} {chunk['title']}".strip()
+    return abstract, "\n".join(blocks), head
+
+
+def prompt_for_paper(doc, chunk):
+    """The original prompt, for research papers. Kept as it was; llm.SYSTEM is its system prompt."""
+    abstract, blocks, head = _context(doc, chunk)
     return f"""Paper: {doc['meta']['title']}
 
 Paper abstract, for context:
@@ -74,7 +80,7 @@ This section: {head}
 
 Its units in reading order. A unit is a paragraph, a list item, or a figure or table caption; each unit's sentences are numbered from 0.
 
-{chr(10).join(blocks)}
+{blocks}
 
 A reader zooms out of this paper level by level: full text, then key sentences, then brief, then takeaway, then topic. Write the short levels for every unit, and one takeaway for the whole section.
 
@@ -90,6 +96,57 @@ For the section: takeaway, ONE sentence of at most {BUDGET['section']} words sta
 Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms such as "zero-shot" are fine). Units show math as $...$; when a symbol is essential to a takeaway or reason, copy its $...$ exactly as it appears in the unit, otherwise avoid math. No citations; no figure or table numbers except in a caption's own lines.
 
 Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
+
+
+# Lecture notes written up by the lecture-notes-formatter skill: prose study notes with a Topic Inventory, numbered
+# sections, worked examples, a Formula Summary Sheet and a Cheat Sheet. The role names stay the paper ones (the reader
+# colours by them); the prompt gives them a lecture meaning.
+SYSTEM_LECTURE = ("You compress the sections of a student's university lecture notes into nested zoom levels for a "
+                  "revision interface. You are precise about what the notes teach, keep the lecture's terminology "
+                  "and symbols, and answer with JSON only.")
+
+
+def prompt_for_lecture(doc, chunk):
+    abstract, blocks, head = _context(doc, chunk)
+    # the vault's nav line (links to the neighbouring lectures) is not an opening
+    nav = re.sub(r"%%.*?%%|\[\[[^\]]*\]\]|[\s·←→|-]", "", abstract)
+    opening = f"Opening of the notes, for context:\n{abstract}\n\n" if nav else ""
+    return f"""Lecture notes: {doc['meta']['title']}
+
+{opening}Outline (▶ marks this section):
+{outline(doc, chunk['id'])}
+
+This section: {head}
+
+Its units in reading order. A unit is a paragraph, a list item, or a figure or table caption; each unit's sentences are numbered from 0.
+
+{blocks}
+
+These are a student's study notes for one lecture. A student zooms out of them level by level while revising for an exam: full text, then key sentences, then brief, then takeaway, then topic. Write the short levels for every unit, and one takeaway for the whole section.
+
+For each unit:
+- role: the unit's job in the lecture, one of: context (motivation, recap of an earlier lecture, prerequisite, background), gap (the problem or weakness of the previous approach that motivates the next idea), claim (a definition, theorem, rule or key idea to remember), method (an algorithm, architecture, procedure or derivation), setup (notation, assumptions, the problem setting, the givens of an example), result (a final formula, a computed answer, a worked example's outcome, a measured number), analysis (intuition, explanation of why it works, proof idea, comparison between approaches), limitation (a pitfall, edge case, common mistake, caveat or open question).
+- takeaway: ONE English sentence of at most {BUDGET['takeaway']} words stating what the student must know from this unit: the definition, formula, rule, mechanism or answer itself, conclusion first, packed like a revision flashcard. Name the thing itself, not the activity ("this section covers", "we discuss", "recap of", "the lecture explains"). Keep the lecture's own terms and symbols. Someone reading only the takeaways of the whole lecture in order should be able to revise its argument.
+- topic: the unit's subject as a bare noun phrase of at most {BUDGET['topic']} words, copied VERBATIM from inside the takeaway.
+- reason: ONE more English sentence of at most {BUDGET['reason']} words that reads on from the takeaway and gives the why or how: the intuition, the condition it needs, the consequence, or the step that makes it work. For a worked example, give the principle it illustrates or its final answer. Use "" when the unit is a single short sentence.
+- evidence: the numbers of the 1 or 2 sentences (3 only when the unit has 7 or more) whose verbatim text best backs the takeaway, ascending; prefer sentences that state a definition, a formula, a rule or a final answer over transitions, signposting ("in this section we", "recall that") and restated questions.
+
+For the section: takeaway, ONE sentence of at most {BUDGET['section']} words stating what this section teaches; topic, at most {BUDGET['topic']} words copied verbatim from that takeaway.
+
+Notes of this kind often contain sections that only list or collect things: a topic inventory (a table of contents), a formula summary sheet, a cheat sheet or recall checklist, a set of numerical problems. For those, state what the list or sheet holds or the key items on it; do not invent content that is not in the unit. Text flagged "[Unclear in source]" or "[Possible source inconsistency]" is a caveat: use the limitation role for it.
+
+Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms such as "zero-shot" are fine). Units show math as $...$; when a symbol or formula is essential to a takeaway or reason, copy its $...$ exactly as it appears in the unit, otherwise avoid math. Treat any Obsidian markup (wikilinks, callout markers, embeds, tags) as plain text and never copy markup into your output. No citations.
+
+Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
+
+
+# The prompt in use. "paper" is the original; switch back by changing this one word.
+MODE = "lecture"
+PROMPTS = {"paper": (prompt_for_paper, llm.SYSTEM), "lecture": (prompt_for_lecture, SYSTEM_LECTURE)}
+
+
+def prompt_for(doc, chunk):
+    return PROMPTS[MODE][0](doc, chunk)
 
 
 def clean(s):
@@ -236,7 +293,7 @@ def build(doc, cfg, cache_dir, jobs=4, log=print, progress=None, force=False, st
         if stop is not None and stop.is_set():   # stopped: the chunks not yet sent are skipped
             return c, None, llm.Stopped()
         try:
-            return c, llm.call(prompt_for(doc, c), SCHEMA, cfg, cache_dir, force), None
+            return c, llm.call(prompt_for(doc, c), SCHEMA, cfg, cache_dir, force, system=PROMPTS[MODE][1]), None
         except Exception as e:  # one failed chunk falls back to local ladders, the rest still build
             return c, None, e
 
