@@ -13,6 +13,7 @@ Written words that also occur in the key sentences carry `m`, the index of
 that source token, so the morph can slide the word instead of swapping it.
 One model call per chunk (a heading and the units under it).
 """
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 
@@ -140,9 +141,51 @@ Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms
 Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
 
 
-# The prompt in use. "paper" is the original; switch back by changing this one word.
-MODE = "lecture"
-PROMPTS = {"paper": (prompt_for_paper, llm.SYSTEM), "lecture": (prompt_for_lecture, SYSTEM_LECTURE)}
+# Study notes written next to an assignment's code by the pa-notes skill: a big-picture Section 0, then one Batch section
+# per implementation batch (contract, key code, theory, quiz traps, worked numbers, raw test output, self-check).
+SYSTEM_PA = ("You compress the sections of a student's notes on a programming assignment into nested zoom levels for a "
+             "revision interface. The student must explain and defend the implementation in a quiz or viva. You are "
+             "precise about what the code does and why, keep the notes' names and symbols, and answer with JSON only.")
+
+
+def prompt_for_pa(doc, chunk):
+    abstract, blocks, head = _context(doc, chunk)
+    nav = re.sub(r"%%.*?%%|\[\[[^\]]*\]\]|[\s·←→|-]", "", abstract)
+    opening = f"Opening of the notes, for context:\n{abstract}\n\n" if nav else ""
+    return f"""Assignment notes: {doc['meta']['title']}
+
+{opening}Outline (▶ marks this section):
+{outline(doc, chunk['id'])}
+
+This section: {head}
+
+Its units in reading order. A unit is a paragraph, a list item, or a figure or table caption; each unit's sentences are numbered from 0. A code block, a table or a raw test-output block may be missing from the units: read the prose around it.
+
+{blocks}
+
+These are a student's study notes on how an assignment was implemented. The student revises from them for a quiz on the implementation, where they must say what each piece of code does, why it is written that way, and which silent bugs to avoid. A student zooms out of them level by level: full text, then key sentences, then brief, then takeaway, then topic. Write the short levels for every unit, and one takeaway for the whole section.
+
+For each unit:
+- role: the unit's job in the notes, one of: context (what the assignment or the spec asks, the big picture, background from the lectures), gap (the starter code's mistake or what was missing that the implementation has to fix), claim (a requirement of the spec, or a decision taken, stated as a rule), method (the code and how it works, line by line or step by step), setup (fixed numbers, config, shapes, environment, hyperparameters), result (a measured number, a test outcome, a worked-numbers table, a run's metrics), analysis (why it is written that way, the theory behind it, how to read the evidence), limitation (a quiz trap: a bug that runs and passes shape checks but is wrong, or a caveat on the result).
+- takeaway: ONE English sentence of at most {BUDGET['takeaway']} words stating what the student must be able to say about this unit: what the code does, the rule it follows, the number it gives, or the trap it avoids, conclusion first, packed like a flashcard. Name the thing itself (the function, the formula, the value), not the activity ("this section explains", "we implement", "the notes describe"). Keep the notes' own names, symbols and numbers. Someone reading only the takeaways of the whole file in order should be able to explain the implementation.
+- topic: the unit's subject as a bare noun phrase of at most {BUDGET['topic']} words, copied VERBATIM from inside the takeaway.
+- reason: ONE more English sentence of at most {BUDGET['reason']} words that reads on from the takeaway and gives the why: the axis, shape, sign or order that makes the code correct, the theory behind it, or the consequence of getting it wrong. For a result, give what it shows. For a quiz trap, give how the code avoids it. Use "" when the unit is a single short sentence.
+- evidence: the numbers of the 1 or 2 sentences (3 only when the unit has 7 or more) whose verbatim text best backs the takeaway, ascending; prefer sentences that state a rule, a formula, a number or the reason for a choice over transitions and lead-ins.
+
+For the section: takeaway, ONE sentence of at most {BUDGET['section']} words stating what this section lets the student explain; topic, at most {BUDGET['topic']} words copied verbatim from that takeaway.
+
+Some units only collect things: a self-check (questions with short answers after an arrow), raw test output, a resources list, a table of fixed numbers. For those, state what they test or show, or the key items; do not invent content that is not in the unit. Numbers in a takeaway or reason are copied exactly from the unit, never rounded or recomputed.
+
+Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms such as "zero-shot" are fine). Units show math and code names as $...$ or `...`; when a symbol or formula is essential to a takeaway or reason, copy its $...$ exactly as it appears in the unit, otherwise avoid math. Treat any Obsidian markup (wikilinks, callout markers, embeds, tags) as plain text and never copy markup into your output. No citations.
+
+Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
+
+
+# The prompt in use: "paper" (the original), "lecture", or "pa". Set it per run with ADR_MODE=pa, e.g.
+#   ADR_MODE=pa python -m adr "PA2 Notes.md"        (the server reads it once, when it starts)
+MODE = os.environ.get("ADR_MODE", "lecture")
+PROMPTS = {"paper": (prompt_for_paper, llm.SYSTEM), "lecture": (prompt_for_lecture, SYSTEM_LECTURE),
+           "pa": (prompt_for_pa, SYSTEM_PA)}
 
 
 def prompt_for(doc, chunk):
