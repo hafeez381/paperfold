@@ -80,12 +80,12 @@ class Jobs:
         self.stops = {}   # job id -> threading.Event, set when the reader stops it (kept out of the job: it is sent as JSON)
         threading.Thread(target=self.work, daemon=True).start()
 
-    def submit(self, ref, lang, force):
+    def submit(self, ref, lang, force, mode=None):
         pid = store.resolve(ref)
         for j in self.items.values():  # the same request already waiting or running is that job
             if j["pid"] == pid and j["lang"] == lang and j["status"] in ("queued", "running"):
                 return j
-        job = {"id": uuid.uuid4().hex[:10], "pid": pid, "lang": lang, "force": bool(force), "status": "queued",
+        job = {"id": uuid.uuid4().hex[:10], "pid": pid, "lang": lang, "force": bool(force), "mode": mode, "status": "queued",
                "stage": "queued", "done": 0, "total": 0, "error": "", "log": [], "created": time.time(), "finished": None}
         self.items[job["id"]] = job
         self.stops[job["id"]] = threading.Event()
@@ -129,7 +129,7 @@ class Jobs:
             try:
                 spec = models.resolve(None)  # the model chosen in the settings, resolved once per job
                 job["model"] = spec["id"]
-                pipeline.generate(job["pid"], job["lang"], spec, force=job["force"], progress=progress, log=log, stop=stop)
+                pipeline.generate(job["pid"], job["lang"], spec, force=job["force"], progress=progress, log=log, stop=stop, mode=job["mode"])
                 job["status"] = "done"
             except Exception as e:  # shown in the app; the traceback stays in the job log
                 if isinstance(e, llm.Stopped) or stop.is_set():
@@ -268,7 +268,7 @@ def make_handler(jobs):
                     if lang not in langs.LANGS:
                         return self.json({"error": f"unknown language {lang}"}, 400)
                     try:
-                        job = jobs.submit(body.get("paper", ""), lang, body.get("force"))
+                        job = jobs.submit(body.get("paper", ""), lang, body.get("force"), body.get("mode") if body.get("mode") in ("paper", "lecture", "pa") else None)
                     except ValueError as e:   # not a paper's reference, or (a DOI) none Europe PMC can read in full
                         return self.json({"error": str(e) if str(e) in ("no-fulltext", "no-article") else "bad-ref"}, 400)
                     return self.json(job)

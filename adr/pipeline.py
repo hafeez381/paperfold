@@ -15,7 +15,7 @@ def task(cfg, name):
     return models.for_task(llm.spec_of(cfg), name)
 
 
-def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=lambda *a: None, stop=None):
+def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=lambda *a: None, stop=None, mode=None):
     def check():
         if stop is not None and stop.is_set():
             raise llm.Stopped()
@@ -45,7 +45,10 @@ def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=
     en = store.read(pid, "en")
     if en is None or (force and lang == "en"):
         check()
-        ladder.build(doc, task(cfg, "ladder"), cache, jobs=jobs, log=log, progress=lambda a, b: progress("ladder", a, b), force=force, stop=stop)
+        src = d / "source.md"   # a Markdown file the reader brought; a paper PaperFold fetched has none
+        mode = ladder.resolve_mode(doc, src.read_text(errors="replace") if src.exists() else "", mode)
+        log(f"prompt: {mode}")
+        ladder.build(doc, task(cfg, "ladder"), cache, jobs=jobs, log=log, progress=lambda a, b: progress("ladder", a, b), force=force, stop=stop, mode=mode)
         check()
         progress("links", 0, 1)
         links.build(doc, task(cfg, "links"), cache, log=log, force=force)

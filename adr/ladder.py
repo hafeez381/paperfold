@@ -181,15 +181,44 @@ Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms
 Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
 
 
-# The prompt in use: "paper" (the original), "lecture", or "pa". Set it per run with ADR_MODE=pa, e.g.
-#   ADR_MODE=pa python -m adr "PA2 Notes.md"        (the server reads it once, when it starts)
-MODE = os.environ.get("ADR_MODE", "lecture")
+# One prompt per kind of document, chosen per document (resolve_mode): "paper" is the original.
 PROMPTS = {"paper": (prompt_for_paper, llm.SYSTEM), "lecture": (prompt_for_lecture, SYSTEM_LECTURE),
            "pa": (prompt_for_pa, SYSTEM_PA)}
 
 
-def prompt_for(doc, chunk):
-    return PROMPTS[MODE][0](doc, chunk)
+def prompt_for(doc, chunk, mode="paper"):
+    return PROMPTS[mode][0](doc, chunk)
+
+
+def detect_mode(doc, raw):
+    """What kind of document this is, from its own headings and markup (no model call). raw: the Markdown the reader
+    brought, "" for a source PaperFold fetched itself (arXiv, PubMed Central, bioRxiv, Wikipedia): those are papers."""
+    if not raw:
+        return "paper"
+    titles = [f"{c['num']} {c['title']}".strip() for c in doc["chunks"]]
+    n = lambda pat: sum(bool(re.search(pat, t, re.I)) for t in titles)  # noqa: E731
+    score = {
+        "pa": 3 * n(r"^batch \d+\b") + 2 * n(r"the big picture") + 2 * bool(re.search(r"\[!question\]-? *Self-check", raw))
+              + 2 * bool(re.search(r"\[!example\]-? *Test output", raw))
+              + 2 * n(r"^\W*(task|part) \w+|viva|`[\w/.]+\.py`"),   # older notes: per task, per file, per viva
+        "lecture": 3 * n(r"^topic inventory") + 3 * n(r"cheat sheet|formula summary") + n(r"^numerical problems")
+                   + bool(re.search(r"nav:start", raw)),
+        "paper": 3 * n(r"^abstract$") + 3 * n(r"^references$|^bibliography$") + 2 * n(r"related work")
+                 + 2 * (len(re.findall(r"\[\d+(?:[,-] ?\d+)*\]", raw)) >= 5),
+    }
+    best = max(score, key=score.get)   # on a tie, the first: pa, lecture, paper
+    return best if score[best] >= 3 else "paper"   # no clear signal: the original prompt
+
+
+def resolve_mode(doc, raw, explicit=None):
+    """The prompt for this document: the reader's choice, else `adr-mode: paper|lecture|pa` in the file's front matter,
+    else the ADR_MODE environment variable, else what the document looks like."""
+    fm = re.match(r"\A---\n(.*?)\n---", raw or "", re.S)
+    fm = re.search(r"^adr-mode\s*:\s*(\w+)", fm.group(1), re.M | re.I) if fm else None
+    for m in (explicit, fm and fm.group(1), os.environ.get("ADR_MODE")):
+        if m and m.lower() in PROMPTS:
+            return m.lower()
+    return detect_mode(doc, raw)
 
 
 def clean(s):
@@ -327,7 +356,7 @@ def section_ladder(o, topic_budget=3, doc=None, chunk=None):
     return {"take": take, "topic": locate(clean(o.get("topic")), take) or head_words(take, topic_budget)}
 
 
-def build(doc, cfg, cache_dir, jobs=4, log=print, progress=None, force=False, stop=None):
+def build(doc, cfg, cache_dir, jobs=4, log=print, progress=None, force=False, stop=None, mode="paper"):
     chunks = [c for c in doc["chunks"] if c["units"]]
     cost, warnings, errors = 0.0, [], []
     model = llm.label(cfg)
@@ -336,7 +365,7 @@ def build(doc, cfg, cache_dir, jobs=4, log=print, progress=None, force=False, st
         if stop is not None and stop.is_set():   # stopped: the chunks not yet sent are skipped
             return c, None, llm.Stopped()
         try:
-            return c, llm.call(prompt_for(doc, c), SCHEMA, cfg, cache_dir, force, system=PROMPTS[MODE][1]), None
+            return c, llm.call(prompt_for(doc, c, mode), SCHEMA, cfg, cache_dir, force, system=PROMPTS[mode][1]), None
         except Exception as e:  # one failed chunk falls back to local ladders, the rest still build
             return c, None, e
 

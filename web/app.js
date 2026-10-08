@@ -142,8 +142,8 @@
     if (jobs.some(live) || watchers.size) polling = setTimeout(poll, 1200);
   }
   function startPolling() { if (!polling) polling = setTimeout(poll, 400); }
-  async function submit(paper, lang, force, onUpdate) {
-    const job = await api('/api/generate', { paper, lang, force: !!force });
+  async function submit(paper, lang, force, onUpdate, mode) {
+    const job = await api('/api/generate', { paper, lang, force: !!force, mode: mode || '' });
     watchers.set(job.id, (j) => { onUpdate(j); if (j.status === 'done' || j.status === 'error' || j.status === 'stopped') watchers.delete(j.id); });
     jobs = [...jobs.filter((j) => j.id !== job.id), job];
     renderSidebar(); onUpdate(job); startPolling();
@@ -336,7 +336,7 @@
           card.querySelector('.jc-stop').onclick = () => stopJob(j.id);
           // readable (parsed): the paper opens in its own words now, and its levels come in while it is read
           if (j.status === 'done' || (j.readable && j.status === 'running')) location.href = `/p/${j.pid}?lang=${encodeURIComponent(j.lang)}`;
-        });
+        }, document.getElementById('mode').value);
       } catch (x) { card.hidden = true; fail(errText(x.message)); }
     }
     form.onsubmit = async (e) => {
