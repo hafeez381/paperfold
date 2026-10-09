@@ -14,6 +14,8 @@ Your agent writes more than you have time to read. TextFold folds every Claude C
 
 Type the digit while the prompt is empty, or pick a level in the row above the prompt. A folded reply tells you how much of it you are seeing, and `1` brings back every word. Short replies stay whole: one under about 80 words, or one a fold would barely shorten, always shows as written.
 
+**Start folded.** A session starts at Full. To start at another level, run `/config` and set **Starting level**; in the session, the row above the prompt and the keys 1 to 5 still change it.
+
 ## Why you can trust a fold
 
 Nothing is paraphrased. TextFold adds a short section to the system prompt that asks Claude to lead with the point: the answer first in every reply, and the sentence that states its point first in every paragraph and list item. A fold keeps what Claude put first. There is no second model and no summary, so a fold costs nothing, takes no time, and never puts words in Claude's mouth.

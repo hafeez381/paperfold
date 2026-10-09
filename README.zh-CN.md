@@ -13,7 +13,7 @@
 
 [English](README.md) · **简体中文**
 
-**[试一试效果 →](https://chenxiachan.github.io/paperfold-gallery/)** 来自不同领域的arXiv论文，无需安装。
+**[试一试效果 →](https://chenxiachan.github.io/paperfold-gallery/)** 来自不同领域的论文、一篇维基百科条目和一份 GitHub README，无需安装。
 
 <br>
 
@@ -31,9 +31,10 @@ Agent 写的，总比你有空读的多。一个 [Claude Code mod](https://code.
 
 ## 最新
 
-- **2026 年 10 月：对照原文读。** 论文页顶部的 **原文** 会在左边打开它的 PDF（来自 arXiv、PubMed Central 或 bioRxiv），读到哪一段，就标出它在原页上的位置。新论文解析完就能打开，缩放层级在后台生成。
-- **2026 年 10 月：Agent 的回答也能折叠了。** [TextFold](#在-claude-code-里) 把五个层级放到 Claude Code 的每条回答上。按 5 看一句话的答案，按 1 看每一个字。
-- **2026 年 10 月：不只读 arXiv。** 粘贴 PubMed Central、bioRxiv、medRxiv 上论文的链接或 DOI，或任何语言的维基百科条目，也可以拖入你自己的 Markdown 文件。打开后同样是五个层级。
+- **2026 年 10 月 8 日：读任何 GitHub README。** 粘贴仓库链接，就能在五个层级上读它的 README，logo、徽章和动图都和 GitHub 上一样。Markdown 文件里写的 HTML 也会保留，侧栏按论文、维基百科、GitHub 和文档分组。
+- **2026 年 10 月 8 日：对照原文读。** 论文页顶部的 **原文** 会在左边打开它的 PDF（来自 arXiv、PubMed Central 或 bioRxiv），读到哪一段，就标出它在原页上的位置。新论文解析完就能打开，缩放层级在后台生成。
+- **2026 年 10 月 7 日：Agent 的回答也能折叠了。** [TextFold](#在-claude-code-里) 把五个层级放到 Claude Code 的每条回答上。按 5 看一句话的答案，按 1 看每一个字。
+- **2026 年 10 月 6 日：不只读 arXiv。** 粘贴 PubMed Central、bioRxiv、medRxiv 上论文的链接或 DOI，或任何语言的维基百科条目，也可以拖入你自己的 Markdown 文件。打开后同样是五个层级。
 
 ## 读论文，脑子里少装一点
 
@@ -76,7 +77,7 @@ python3 -m pip install -r requirements.txt
 python3 -m adr serve
 ```
 
-在浏览器里打开 `http://localhost:3017`（最后一条命令会打印这个地址）。第一次使用先[连接一个模型](#连接模型)，然后粘贴 arXiv、PubMed Central、bioRxiv、medRxiv 上论文的链接或 DOI，或维基百科条目，也可以拖入一个 Markdown 文件，再选择语言。
+在浏览器里打开 `http://localhost:3017`（最后一条命令会打印这个地址）。第一次使用先[连接一个模型](#连接模型)，然后粘贴 arXiv、PubMed Central、bioRxiv、medRxiv 上论文的链接或 DOI、维基百科条目，或者 GitHub 仓库（读它的 README），也可以拖入一个 Markdown 文件，再选择语言。
 
 需要 Python 3.9 或更新的版本（macOS 自带的就可以）。arXiv 论文要有 arXiv 生成的 HTML 版本，2023 年底以来的论文大多都有；bioRxiv 和 medRxiv 的预印本、任何语言的维基百科条目，都直接从网站读取；其他论文要在 [Europe PMC](https://europepmc.org) 有开放全文（PubMed Central 的开放获取文章，以及 Research Square 等平台的预印本）；Markdown 文件没有这个要求。
 
@@ -137,6 +138,8 @@ claude plugin install textfold@paperfold
 | **5** | **Gist** | 一句话的答案 |
 
 在提示框为空时输入数字，或者在提示框上方那一行里选一个层级。短回答保持原样：不到大约 80 个词（中文约 130 字），或者折叠后几乎不会变短的回答，总是原样显示。
+
+**默认层级。** 每个会话默认从 Full 开始。想换成别的层级，运行 `/config`，设置 **Starting level**；会话里照样可以用提示框上方那一行或数字键 1 到 5 切换。
 
 **为什么折叠可信。** TextFold 请 Claude 把要点放在前面：每条回答先给答案，每段先写关键句。折叠保留的就是 Claude 放在最前面的内容。没有第二个模型，也不做摘要，所以折叠不花钱、不用等，也不会替 Claude 说它没说过的话。
 

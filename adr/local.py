@@ -38,8 +38,9 @@ class Images:
     """Where each image of the document is kept (img/NN-name): copied from beside the file, downloaded, or decoded
     from a data URI. One that cannot be had is left out (the page shows its name)."""
 
-    def __init__(self, folder, base, get=None):
+    def __init__(self, folder, base, get=None, pre=None):
         self.folder, self.base, self.seen, self.get = folder, base, {}, get   # get(url) -> (bytes, url): a source's own
+        self.pre = pre or {}   # src -> (bytes, name), read beforehand (prefetch)
 
     def resolve(self, src):
         if src in self.seen:
@@ -59,6 +60,8 @@ class Images:
         return where
 
     def _read(self, src):
+        if src in self.pre:
+            return self.pre[src]
         m = re.match(r"data:image/(png|jpe?g|gif|webp);base64,(.+)$", src, re.S)
         if m:
             return base64.b64decode(m.group(2)), f"image.{m.group(1)}"
@@ -68,15 +71,37 @@ class Images:
                 data, _ = self.get(src)
                 return (data if data[:4] != b"<!DO" and data[:5] != b"<html" else None), path.rsplit("/", 1)[-1] or "image"
             with urllib.request.urlopen(urllib.request.Request(src, headers=UA), timeout=20) as r:
-                if not (r.headers.get("Content-Type") or "").startswith("image/"):
+                ctype = (r.headers.get("Content-Type") or "").split(";")[0].strip()
+                if not ctype.startswith("image/"):
                     return None, ""
-                return r.read(MAX_IMG + 1), path.rsplit("/", 1)[-1] or "image"
+                name = path.rsplit("/", 1)[-1] or "image"
+                if Path(name).suffix.lower() not in IMG_EXT:   # a badge's address has none: the page needs it to draw it
+                    name += {"image/svg+xml": ".svg", "image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif", "image/webp": ".webp"}.get(ctype, "")
+                return r.read(MAX_IMG + 1), name
         if self.base is None or re.match(r"^[a-z][a-z0-9+.-]*:", src, re.I):
             return None, ""
         f = (self.base / urllib.parse.unquote(src.split("#")[0].split("?")[0])).resolve()
         if f.suffix.lower() not in IMG_EXT or not f.is_file() or f.stat().st_size > MAX_IMG:
             return None, ""
         return f.read_bytes(), f.name
+
+
+def prefetch(srcs, workers=6):
+    """Pictures on the web, read at the same time rather than one after the other (a README's GIFs take seconds
+    each): src -> (bytes, name), for Images(pre=...). One that cannot be read is left to Images to try again."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    web = sorted({s for s in srcs if re.match(r"https?://", s or "", re.I)})
+    reader = Images(None, None)
+
+    def one(src):
+        try:
+            return src, reader._read(src)
+        except Exception:
+            return src, None
+
+    with ThreadPoolExecutor(workers) as ex:
+        return {src: got for src, got in ex.map(one, web) if got and got[0]}
 
 
 def import_text(text, name="document.md", base=None):
@@ -90,10 +115,10 @@ def import_text(text, name="document.md", base=None):
     meta = {"id": pid, "version": "", "title": title, "authors": fm["authors"], "date": fm["date"],
             "abs_url": "", "html_url": "", "license": fm["license"] if re.match(r"https?://", fm["license"]) else "",
             "source": {"kind": kind, "name": Path(name).name}, "label": Path(name).name}
-    return store_doc(pid, html, meta, "source.md", text, lambda folder: Images(folder, base).resolve)
+    return store_doc(pid, html, meta, "source.md", text, lambda folder: Images(folder, base).resolve, sizes=True)
 
 
-def store_doc(pid, html, meta, raw_name, raw, resolver):
+def store_doc(pid, html, meta, raw_name, raw, resolver, sizes=False):
     """A document's semantic HTML stored as a paper: normalized (with its images, through resolver(img folder)) into
     papers/<pid>/, written whole or not at all. A paper already stored stays as it is."""
     d = store.pdir(pid)
@@ -103,7 +128,7 @@ def store_doc(pid, html, meta, raw_name, raw, resolver):
     shutil.rmtree(tmp, ignore_errors=True)
     tmp.mkdir(parents=True)
     try:
-        (tmp / "source.html").write_text(semantic.normalize(html, resolve_img=resolver(tmp / "img")))
+        (tmp / "source.html").write_text(semantic.normalize(html, resolve_img=resolver(tmp / "img"), sizes=sizes))
         (tmp / raw_name).write_text(raw)
         (tmp / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False))
         shutil.rmtree(d, ignore_errors=True)

@@ -13,7 +13,7 @@
 
 **English** · [简体中文](README.zh-CN.md)
 
-**[Try it →](https://chenxiachan.github.io/paperfold-gallery/)** arXiv papers from different fields, nothing to install.
+**[Try it →](https://chenxiachan.github.io/paperfold-gallery/)** papers from different fields, a Wikipedia article and a GitHub README, nothing to install.
 
 <br>
 
@@ -31,9 +31,10 @@ Your agent writes more than you have time to read. A [Claude Code mod](https://c
 
 ## What's new
 
-- **October 2026: read beside the original.** **Original**, at the top of a paper, opens its PDF at the left (from arXiv, PubMed Central or bioRxiv) and shows each paragraph on its page as you read. A new paper opens as soon as it can be read, while its levels are written.
-- **October 2026: your agent's replies fold too.** [TextFold](#in-claude-code) puts the five levels on every Claude Code reply. Press 5 for the answer in one sentence, 1 for every word.
-- **October 2026: more than arXiv.** Paste the link or DOI of a paper on PubMed Central, bioRxiv or medRxiv, or a Wikipedia article in any language, or drag in a Markdown file of your own. Each opens at the same five levels.
+- **October 8, 2026: any GitHub README.** Paste a repository's link and read its README at five levels, with its logo, badges and GIFs as on GitHub. A Markdown file keeps the HTML written in it, and the sidebar groups papers, Wikipedia articles, READMEs and documents.
+- **October 8, 2026: read beside the original.** **Original**, at the top of a paper, opens its PDF at the left (from arXiv, PubMed Central or bioRxiv) and shows each paragraph on its page as you read. A new paper opens as soon as it can be read, while its levels are written.
+- **October 7, 2026: your agent's replies fold too.** [TextFold](#in-claude-code) puts the five levels on every Claude Code reply. Press 5 for the answer in one sentence, 1 for every word.
+- **October 6, 2026: more than arXiv.** Paste the link or DOI of a paper on PubMed Central, bioRxiv or medRxiv, or a Wikipedia article in any language, or drag in a Markdown file of your own. Each opens at the same five levels.
 
 ## Read with less in your head
 
@@ -76,7 +77,7 @@ python3 -m pip install -r requirements.txt
 python3 -m adr serve
 ```
 
-Open `http://localhost:3017`, which the last command prints. The first time, [connect a model](#connect-a-model); then paste the link or DOI of a paper on arXiv, PubMed Central, bioRxiv or medRxiv, or a Wikipedia article, or drag in a Markdown file, and pick a language.
+Open `http://localhost:3017`, which the last command prints. The first time, [connect a model](#connect-a-model); then paste the link or DOI of a paper on arXiv, PubMed Central, bioRxiv or medRxiv, a Wikipedia article, or a GitHub repository (its README), or drag in a Markdown file, and pick a language.
 
 You need Python 3.9 or newer (the one macOS ships with works). An arXiv paper needs its HTML version, as most papers since late 2023 have; a bioRxiv or medRxiv preprint, or a Wikipedia article in any language, is read from the site itself; any other paper needs its open full text in [Europe PMC](https://europepmc.org) (open-access articles in PubMed Central, and preprints such as Research Square's); a Markdown file needs nothing.
 
@@ -137,6 +138,8 @@ claude plugin install textfold@paperfold
 | **5** | **Gist** | the answer, in one sentence |
 
 Type the digit while the prompt is empty, or pick a level in the row above the prompt. Short replies stay whole: one under about 80 words, or one a fold would barely shorten, always shows as written.
+
+**Start folded.** A session starts at Full. To start at another level, run `/config` and set **Starting level**; in the session, the row above the prompt and the keys 1 to 5 still change it.
 
 **Why you can trust a fold.** TextFold asks Claude to lead with the point: the answer first in every reply, the key sentence first in every paragraph. A fold keeps what Claude put first. There is no second model and no summary, so a fold costs nothing, takes no time, and never puts words in Claude's mouth.
 
