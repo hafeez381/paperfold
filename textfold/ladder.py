@@ -176,8 +176,32 @@ def tables_of(doc, chunk, limit=1500, most=3):
     return out[:most]
 
 
-def prompt_for(doc, chunk):
+def _units(doc, chunk):
+    """What every prompt shows of a section: the document's opening, its units with their sentences numbered, its
+    heading, and its tables (as context)."""
     U, A = doc["units"], doc["atoms"]
+    abstract = " ".join(plain(U[u]["toks"], A) for u in doc["chunks"][0]["units"]) if doc["chunks"] and doc["chunks"][0]["id"] == "abstract" else ""
+    blocks = []
+    for n, uid in enumerate(chunk["units"]):
+        u = U[uid]
+        kind = KIND.get(u["role"], "paragraph")
+        if u["role"] == "caption":
+            fig = next((b for b in doc["blocks"] if b.get("cap") == uid), {})
+            kind = f"caption of {fig.get('label') or fig.get('kind', 'figure')}"
+        if u.get("env"):
+            kind = f"{kind} inside {u['env']['title']}"
+        lines = [f"[U{n}] {kind}"] + [f"  {i}: {plain(u['toks'][s:e], A)}" for i, (s, e) in enumerate(u["sents"])]
+        blocks.append("\n".join(lines))
+    head = f"{chunk['num']} {chunk['title']}".strip()
+    tables = tables_of(doc, chunk)
+    context = ("\n\nTables in this section, for context (they are not units; a takeaway may use what they show):\n\n" + "\n\n".join(tables)) if tables else ""
+    return abstract, chr(10).join(blocks), head, context
+
+
+def prompt_for(doc, chunk):
+    mode = kinds.mode_of(doc["meta"])
+    if mode:   # a student's own notes: their prompt (notes_prompt), not the paper's
+        return notes_prompt(doc, chunk, mode)
     b = budgets_for(doc)
     cjk = b is CJK_BUDGET
     one = "ONE sentence" if cjk else "ONE English sentence"
@@ -195,21 +219,7 @@ Each line is read on its own, out of order, by someone deciding whether to zoom 
     job = ("stating what this section establishes in the paper and what it does there (fixes the terms, surveys the rules, "
            "measures the gap, compares a foreign regime, proposes a remedy); a line that only says what the section covers "
            "is not a summary.") if cjk else "stating what this section establishes in the paper;"
-    abstract = " ".join(plain(U[u]["toks"], A) for u in doc["chunks"][0]["units"]) if doc["chunks"] and doc["chunks"][0]["id"] == "abstract" else ""
-    blocks = []
-    for n, uid in enumerate(chunk["units"]):
-        u = U[uid]
-        kind = KIND.get(u["role"], "paragraph")
-        if u["role"] == "caption":
-            fig = next((b for b in doc["blocks"] if b.get("cap") == uid), {})
-            kind = f"caption of {fig.get('label') or fig.get('kind', 'figure')}"
-        if u.get("env"):
-            kind = f"{kind} inside {u['env']['title']}"
-        lines = [f"[U{n}] {kind}"] + [f"  {i}: {plain(u['toks'][s:e], A)}" for i, (s, e) in enumerate(u["sents"])]
-        blocks.append("\n".join(lines))
-    head = f"{chunk['num']} {chunk['title']}".strip()
-    tables = tables_of(doc, chunk)
-    context = ("\n\nTables in this section, for context (they are not units; a takeaway may use what they show):\n\n" + "\n\n".join(tables)) if tables else ""
+    abstract, blocks, head, context = _units(doc, chunk)
     prompt = kinds.adapt(f"""Paper: {doc['meta']['title']}
 
 Paper abstract, for context:
@@ -222,7 +232,7 @@ This section: {head}
 
 Its units in reading order. A unit is a paragraph, a list item, or a figure or table caption; each unit's sentences are numbered from 0.
 
-{chr(10).join(blocks)}{context}
+{blocks}{context}
 
 A reader zooms out of this paper level by level: full text, then key sentences, then brief, then takeaway, then topic. Write the short levels for every unit, and one takeaway for the whole section.
 
@@ -242,6 +252,82 @@ Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id
         prompt = prompt.replace("no em or en dashes as punctuation, use commas or colons",
                                 "use the punctuation of the text's own language")
     return prompt
+
+
+# The prompts for a student's own notes (kinds.MODES), written for the notes the user's skills make. The role names
+# stay the paper's (the reader colours by them); each kind of note gives them its own meaning.
+NOTES = {
+    "lecture": {
+        "system": "You compress the sections of a student's university lecture notes into nested zoom levels for a revision interface. You are precise about what the notes teach, keep the lecture's terminology and symbols, and answer with JSON only.",
+        "what": "Lecture notes",
+        "about": "These are a student's study notes for one lecture, written up from the professor's slides and notes in prose: a Topic Inventory, numbered sections, worked examples, then a Formula Summary Sheet and a Cheat Sheet & Recall Aids. A student zooms out of them level by level while revising for an exam",
+        "roles": "context (motivation, recap of an earlier lecture, prerequisite, background), gap (the problem or weakness of the previous approach that motivates the next idea), claim (a definition, theorem, rule or key idea to remember), method (an algorithm, architecture, procedure or derivation), setup (notation, assumptions, the problem setting, the givens of an example), result (a final formula, a computed answer, a worked example's outcome, a measured number), analysis (intuition, why it works, a proof idea, a comparison between approaches), limitation (a pitfall, edge case, common mistake, caveat or open question)",
+        "takeaway": "what the student must know from this unit: the definition, formula, rule, mechanism or answer itself, conclusion first, packed like a revision flashcard. Name the thing itself, not the activity (\"this section covers\", \"we discuss\", \"recap of\", \"the lecture explains\")",
+        "follow": "revise the lecture",
+        "reason": "the why or how: the intuition, the condition it needs, the consequence, or the step that makes it work. For a worked example, give the principle it illustrates or its final answer",
+        "evidence": "a definition, a formula, a rule or a final answer over transitions, signposting (\"in this section we\", \"recall that\") and restated questions",
+        "section": "what this section teaches",
+        "special": "Keep every qualifier, scope word and hedge the unit has (\"may\", \"often\", \"for classification problems\", \"not necessarily\") and the reason it gives: never strengthen or generalize a claim. Text marked \"(Expanding on this: ...)\" is background added to the lecture: it may be summarised, but not as something the lecture said. Some units only collect things: the topic inventory (a table of contents), the formula summary sheet, the cheat sheet, mnemonics and recall checklist, the numerical problems. For those, state what they hold or their key items; do not invent content. A figure's caption: state what the figure shows. Text flagged \"[Unclear in source]\", \"[Possible source inconsistency]\" or \"[Diagram placeholder]\" is a caveat: use the limitation role.",
+    },
+    "pa": {
+        "system": "You compress the sections of a student's notes on a programming assignment into nested zoom levels for a revision interface. The student must explain and defend the implementation in a quiz or viva. You are precise about what the code does and why, keep the notes' names and symbols, and answer with JSON only.",
+        "what": "Assignment notes",
+        "about": "These are a student's study notes on how an assignment was implemented, organised by the assignment's tasks: the contract the spec asks for, the key code and why it is written that way, the lecture theory behind it, quiz traps, worked numbers, raw test output and a self-check. The student revises from them for a quiz on the implementation and zooms out of them level by level",
+        "roles": "context (what the assignment or the spec asks, the big picture, background from the lectures), gap (the starter code's mistake or what was missing that the implementation has to fix), claim (a requirement of the spec, or a decision taken, stated as a rule), method (the code and how it works, line by line or step by step), setup (fixed numbers, config, shapes, environment, hyperparameters), result (a measured number, a test outcome, a worked-numbers table, a run's metrics), analysis (why it is written that way, the theory behind it, how to read the evidence), limitation (a quiz trap: a bug that runs and passes shape checks but is wrong, or a caveat on the result)",
+        "takeaway": "what the student must be able to say about this unit: what the code does, the rule it follows, the number it gives, or the trap it avoids, conclusion first, packed like a flashcard. Name the thing itself (the function, the formula, the value), not the activity (\"this section explains\", \"we implement\", \"the notes describe\")",
+        "follow": "explain the implementation",
+        "reason": "the why: the axis, shape, sign or order that makes the code correct, the theory behind it, or the consequence of getting it wrong. For a result, give what it shows. For a quiz trap, give how the code avoids it",
+        "evidence": "a rule, a formula, a number or the reason for a choice over transitions and lead-ins",
+        "section": "what this section lets the student explain",
+        "special": "A code block, a table or a raw test-output block may be missing from the units: read the prose around it. Some units only collect things: the Read first list of lecture sections, the spec's required evidence or research questions quoted verbatim, a self-check (questions with short answers after an arrow), raw test output, a resources list, a table of fixed numbers. For those, state what they ask for, test or show, or their key items; do not invent content. Numbers in a takeaway or reason are copied exactly from the unit, never rounded or recomputed.",
+    },
+    "quiz": {
+        "system": "You compress the sections of a student's quiz-prep note on a programming assignment into nested zoom levels for a last-minute revision interface. Every rule in the note comes with its reason, because the quiz asks why as often as what. You keep the note's names, symbols and numbers, and answer with JSON only.",
+        "what": "Quiz-prep note",
+        "about": "This is a student's quiz-prep note on a programming assignment: the assignment's rules in the manual's order, each with its why, quiz traps, formulas with a worked number, shape traces, practice questions in the past quizzes' format with their answers, and a last-minute checklist. The student zooms out of it level by level just before the quiz",
+        "roles": "context (the quiz's scope and format, the study plan, background), gap (what goes wrong without the rule), claim (a rule of the manual or a fact the quiz can ask), method (a procedure, a pipeline step, the order things happen in), setup (a hyperparameter, a dimension, a fixed number, a shape), result (a worked number, an answer, a traced shape), analysis (the why behind a rule), limitation (a quiz trap or a common wrong answer)",
+        "takeaway": "the rule or fact itself together with its why when the unit gives one, or, for a practice question, the point it tests and its correct answer, conclusion first, packed like a flashcard. Name the thing itself, not the activity (\"this question asks\", \"the note lists\")",
+        "follow": "answer the quiz",
+        "reason": "the why behind the rule, or what breaks without it. For a question, why the right answer is right and the tempting wrong one is wrong",
+        "evidence": "the rule, the reason, the formula, the number or the answer over lead-ins and options that are wrong",
+        "section": "what this section lets the student answer",
+        "special": "A practice question's answer may sit in a folded answer or key further on: use it when it is in the unit or this section, and never invent one. The study plan and the last-minute checklist: state their key items. Numbers in a takeaway or reason are copied exactly from the unit, never rounded or recomputed.",
+    },
+}
+
+
+def notes_prompt(doc, chunk, mode):
+    k, b = NOTES[mode], budgets_for(doc)
+    abstract, blocks, head, context = _units(doc, chunk)
+    # a vault's nav line (links to the neighbouring notes) is not an opening
+    opening = f"Opening of the notes, for context:\n{abstract}\n\n" if re.sub(r"%%.*?%%|\[\[[^\]]*\]\]|[\s·←→|-]", "", abstract) else ""
+    return f"""{k['what']}: {doc['meta']['title']}
+
+{opening}Outline (▶ marks this section):
+{outline(doc, chunk['id'])}
+
+This section: {head}
+
+Its units in reading order. A unit is a paragraph, a list item, or a figure or table caption; each unit's sentences are numbered from 0.
+
+{blocks}{context}
+
+{k['about']}: full text, then key sentences, then brief, then takeaway, then topic. Write the short levels for every unit, and one takeaway for the whole section.
+
+For each unit:
+- role: the unit's job in the notes, one of: {k['roles']}.
+- takeaway: ONE English sentence of at most {b['takeaway']} words stating {k['takeaway']}. Keep the notes' own terms, symbols and numbers. Someone reading only the takeaways of the whole note in order should be able to {k['follow']}.
+- topic: the unit's subject as a bare noun phrase of at most {b['topic']} words, copied VERBATIM from inside the takeaway.
+- reason: ONE more English sentence of at most {b['reason']} words that reads on from the takeaway and gives {k['reason']}; do not restate the takeaway. Use "" when the unit is a single short sentence.
+- evidence: the numbers of the 1 or 2 sentences (3 only when the unit has 7 or more) whose verbatim text best backs the takeaway, ascending; prefer sentences that state {k['evidence']}.
+
+For the section: takeaway, ONE sentence of at most {b['section']} words stating {k['section']}; topic, at most {b['topic']} words copied verbatim from that takeaway.
+
+{k['special']}
+
+Style: no em or en dashes as punctuation, use commas or colons (hyphenated terms such as "zero-shot" are fine). Units show math as $...$; when a symbol or formula is essential to a takeaway or reason, copy its $...$ exactly as it appears in the unit, otherwise avoid math. Treat any Obsidian markup (wikilinks, callout markers, embeds, tags) as plain text and never copy markup into your output. No citations.
+
+Return JSON: {{"section": {{"takeaway": "...", "topic": "..."}}, "units": [{{"id": "U0", "role": "...", "takeaway": "...", "topic": "...", "reason": "...", "evidence": [0]}}, ...]}} with exactly one entry per unit, in order."""
 
 
 def clean(s):
@@ -713,12 +799,16 @@ def build(doc, cfg, cache_dir, jobs=4, log=print, progress=None, force=False, st
     model = llm.label(cfg)
     b = budgets_for(doc)
     cjk = b is CJK_BUDGET
+    mode = kinds.mode_of(doc["meta"])
+    system = NOTES[mode]["system"] if mode else llm.system_for(doc["meta"])
+    if mode:
+        log(f"  prompt: {mode} notes")
 
     def run(c):
         if stop is not None and stop.is_set():   # stopped: the chunks not yet sent are skipped
             return c, None, llm.Stopped()
         try:
-            return c, llm.call(prompt_for(doc, c), SCHEMA, cfg, cache_dir, force, system=llm.system_for(doc["meta"])), None
+            return c, llm.call(prompt_for(doc, c), SCHEMA, cfg, cache_dir, force, system=system), None
         except Exception as e:  # one failed chunk falls back to local ladders, the rest still build
             return c, None, e
 

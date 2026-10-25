@@ -14,7 +14,7 @@ section after an atom added or taken out is translated again too.
 """
 import urllib.error
 
-from . import biorxiv, epmc, github, ladder, links, llm, models, store, translate, webpage, wiki
+from . import biorxiv, epmc, github, kinds, ladder, links, llm, models, store, translate, webpage, wiki
 from .fetch import fetch
 
 
@@ -23,7 +23,9 @@ def task(cfg, name):
     return models.for_task(llm.spec_of(cfg), name)
 
 
-def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=lambda *a: None, stop=None):
+def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=lambda *a: None, stop=None, mode=None):
+    """mode: the reader's choice of prompt, kept with the document: one of kinds.MODES, "text" (the general one), or
+    "auto" (what the document looks like); None leaves it as it is."""
     def check():
         if stop is not None and stop.is_set():
             raise llm.Stopped()
@@ -52,6 +54,8 @@ def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=
     check()
     progress("parse", 0, 1)
     doc = store.parsed(pid)
+    if mode and _set_mode(pid, doc, mode):
+        force = True   # its levels were written with another prompt
     cache = d / "llm-cache"
     en = store.read(pid, "en")
     if cfg is None and (en is None or force or (lang != "en" and store.read(pid, f"tr-{lang}") is None)):
@@ -89,3 +93,21 @@ def generate(ref, lang, cfg, force=False, jobs=4, progress=lambda *a: None, log=
                 store.save_tr(doc, lang, en["version"], was if was == model else f"{was} + {model}")
     progress("done", 1, 1)
     return pid
+
+
+def _set_mode(pid, doc, mode):
+    """The reader's choice of prompt into the document's meta. Returns whether the prompt changed."""
+    if mode == "auto":
+        want = kinds.detect(store.text(pid, "source.md")) if store.has(pid, "source.md") else None
+    else:
+        want = mode if mode in kinds.MODES else None
+    was = kinds.mode_of(doc["meta"])
+    with store.edit(pid) as saved:
+        saved.meta.pop("mode", None)
+        saved.meta.pop("mode_by", None)
+        if want:
+            saved.meta["mode"] = want
+        if mode != "auto":
+            saved.meta["mode_by"] = "reader"
+        doc["meta"] = {**saved.meta}
+    return want != was

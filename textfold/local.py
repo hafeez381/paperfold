@@ -20,7 +20,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from . import ids, markdown, notes, picture, semantic, store
+from . import ids, kinds, markdown, notes, picture, semantic, store
 from .fetch import UA
 from .parse import parse
 
@@ -122,6 +122,9 @@ def _read_md(text, name):
     meta = {"version": "", "title": title, "authors": fm["authors"], "date": fm["date"],
             "abs_url": "", "html_url": "", "license": fm["license"] if re.match(r"https?://", fm["license"]) else "",
             "source": {"kind": kind, "name": Path(name).name}, "label": Path(name).name, "unit_ids": "text"}
+    mode = kinds.detect(text)
+    if mode:
+        meta["mode"] = mode
     return title, html, meta
 
 
@@ -152,8 +155,12 @@ def _replace(pid, text, name, base):
     if not (pid.startswith("md-") and store.valid_id(pid) and (d / "meta.json").exists() and (d / "source.html").exists()):
         raise LookupError(pid)
     was = json.loads(store.read_text(d / "meta.json"))
-    title, html, meta = _read_md(text, name or (was.get("source") or {}).get("name") or "document.md")
-    meta = {**was, **meta, "id": pid, "replaced": store.stamp()}
+    title, html, read = _read_md(text, name or (was.get("source") or {}).get("name") or "document.md")
+    meta = {**was, **read, "id": pid, "replaced": store.stamp()}
+    if was.get("mode_by") == "reader":   # the mode the reader chose stays; else what the edited text looks like now
+        meta["mode"] = was.get("mode")
+    elif "mode" not in read:
+        meta.pop("mode", None)
     old = store.parsed(pid)
     tmp = d.with_name(d.name + ".tmp")
     shutil.rmtree(tmp, ignore_errors=True)

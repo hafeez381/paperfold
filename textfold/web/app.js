@@ -763,7 +763,8 @@
     return job;
   }
   async function submit(paper, lang, force, onUpdate) {
-    return watch(await api('/api/generate', { paper, lang, force: !!force }), onUpdate);
+    // the landing's prompt choice, when there is one (Auto: as the document was read)
+    return watch(await api('/api/generate', { paper, lang, force: !!force, mode: document.getElementById('mode')?.value || '' }), onUpdate);
   }
   // what a PDF says it is, read in the browser: an arXiv id from its margin stamp, a DOI from its metadata or its
   // first page. Only the first page: the second is often the references, full of other papers' ids.

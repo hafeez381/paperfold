@@ -138,12 +138,14 @@ def main():
     ap.add_argument("--model", default="sonnet", help="model alias for `claude -p` (default: sonnet)")
     ap.add_argument("--jobs", type=int, default=4, help="parallel model calls")
     ap.add_argument("--force", action="store_true", help="regenerate (ignore what is stored and cached)")
+    ap.add_argument("--mode", choices=["auto", "text", "lecture", "pa", "quiz"],
+                    help="the prompt, kept with the document: lecture notes, assignment (pa) notes, a quiz-prep note, a general text, or auto (from what it looks like); default: as it is")
     a = ap.parse_args()
     t0 = time.time()
     ref = local.import_file(a.paper) if Path(a.paper).suffix.lower() in local.KINDS and Path(a.paper).is_file() else a.paper
     pid = None
     for lang in ["en"] + a.lang:
-        pid = pipeline.generate(ref, lang, a.model, force=a.force, jobs=a.jobs, log=print,
+        pid = pipeline.generate(ref, lang, a.model, force=a.force, jobs=a.jobs, log=print, mode=a.mode if lang == "en" else None,
                                 progress=lambda s, d, t: print(f"  {s} {d}/{t}", end="\r"))
     print(f"\n  → {build.export(pid)}  ({time.time() - t0:.0f}s)")
 

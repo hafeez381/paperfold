@@ -200,9 +200,9 @@ class Jobs:
         return next((j for j in self.items.values() if j["status"] in ("queued", "running") and not j.get("stopping")
                      and all(j.get(k) == v for k, v in kw.items())), None)
 
-    def submit(self, ref, lang, force, attach=None):
+    def submit(self, ref, lang, force, attach=None, mode=None):
         pid = store.resolve(ref)
-        return self._same(kind="generate", pid=pid, lang=lang) or self._new(self.q, pid=pid, lang=lang, force=bool(force), attach=attach)
+        return self._same(kind="generate", pid=pid, lang=lang) or self._new(self.q, pid=pid, lang=lang, force=bool(force), attach=attach, mode=mode)
 
     def convert(self, pid, file, name, lang, tier=None, replace=False):
         """A file through the engine (then generated): file is on disk; replace converts a stored one again."""
@@ -301,7 +301,7 @@ class Jobs:
                     job["model"] = spec["id"]
                 except RuntimeError:   # none: the paper is still fetched and parsed, to be read as written
                     spec = None
-                pipeline.generate(job["pid"], job["lang"], spec, force=job["force"], progress=self._progress(job, stop), log=self._log(job), stop=stop)
+                pipeline.generate(job["pid"], job["lang"], spec, force=job["force"], progress=self._progress(job, stop), log=self._log(job), stop=stop, mode=job.get("mode"))
                 job["status"] = "done"
             except Exception as e:  # shown in the app; the traceback stays in the job log
                 if str(e) == "no-html" and not stop.is_set():
@@ -717,7 +717,7 @@ def make_handler(jobs):
                     if lang not in langs.LANGS:
                         return self.json({"error": f"unknown language {lang}"}, 400)
                     try:
-                        job = jobs.submit(body.get("paper", ""), lang, body.get("force"))
+                        job = jobs.submit(body.get("paper", ""), lang, body.get("force"), mode=body.get("mode") if body.get("mode") in ("auto", "text", "lecture", "pa", "quiz") else None)
                     except ValueError as e:   # not a paper's reference, or (a DOI) none Europe PMC can read in full
                         return self.json({"error": str(e) if str(e) in ("no-fulltext", "no-article") else "bad-ref"}, 400)
                     return self.json(job)

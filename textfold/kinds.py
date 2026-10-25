@@ -47,3 +47,35 @@ def adapt(prompt, meta):
     for a, b in TEXT:
         prompt = prompt.replace(a, b)
     return prompt
+
+
+# A student's own notes, each with its own prompts (ladder.py): lecture notes (the lecture-notes-formatter skill), an
+# assignment's implementation notes (pa-notes) and a quiz-prep note on it (pa-quiz). Stored as meta["mode"], set when a
+# Markdown file is read (local.py) or chosen by the reader (pipeline.py); anything else is a paper or a text, as above.
+MODES = ("lecture", "pa", "quiz")
+
+
+def mode_of(meta):
+    return meta.get("mode") if meta.get("mode") in MODES else None
+
+
+def detect(text):
+    """A Markdown text's mode, from `textfold-mode:` in its front matter, else its headings and callouts; None: a text."""
+    fm = re.match(r"\A---\n(.*?)\n---", text, re.S)
+    m = fm and re.search(r"^(?:textfold|adr)-mode\s*:\s*['\"]?(\w+)", fm.group(1), re.M | re.I)
+    if m:
+        return m.group(1).lower() if m.group(1).lower() in MODES else None
+    heads = re.findall(r"^#{1,6}\s+(.+)$", text, re.M)
+    n = lambda pat: sum(bool(re.search(pat, h, re.I)) for h in heads)  # noqa: E731
+    has = lambda pat: bool(re.search(pat, text, re.I | re.M))  # noqa: E731
+    score = {
+        "quiz": 4 * bool(n(r"\bquiz\b|\bviva\b")) + 3 * n(r"practice questions") + 3 * n(r"last-minute checklist") + 2 * has(r"\[!todo\][-+]? *study plan")
+                + 2 * has(r"\[!success\]-? *answer"),
+        "pa": 3 * n(r"^\W*batch \d+") + 2 * n(r"^\W*task \d+") + 2 * n(r"the big picture") + 2 * n(r"`[\w/.]+\.py`|viva|^\W*part \w+")
+              + 2 * has(r"\[!question\]-? *self-check") + 2 * has(r"\[!example\]-? *test output")
+              + 2 * has(r"\[!abstract\][-+]? *required evidence"),
+        "lecture": 3 * n(r"^topic inventory") + 3 * n(r"cheat sheet|formula summary") + n(r"^numerical problems")
+                   + has(r"nav:start"),
+    }
+    best = max(score, key=score.get)   # on a tie, the first: quiz, pa, lecture
+    return best if score[best] >= 3 else None
