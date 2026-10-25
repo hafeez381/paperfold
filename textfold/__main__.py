@@ -135,7 +135,7 @@ def main():
     ap = argparse.ArgumentParser(prog="textfold", description="Generate a zoomable reader for an arXiv paper or a Markdown file.")
     ap.add_argument("paper", help="arXiv id or URL, e.g. 2512.23916, or a Markdown file")
     ap.add_argument("--lang", action="append", default=[], help="also generate this language (zh, ja, es, ...); repeatable")
-    ap.add_argument("--model", default="sonnet", help="model alias for `claude -p` (default: sonnet)")
+    ap.add_argument("--model", default="haiku", help="model alias for `claude -p` (default: haiku, Claude Haiku 5.5)")
     ap.add_argument("--jobs", type=int, default=4, help="parallel model calls")
     ap.add_argument("--force", action="store_true", help="regenerate (ignore what is stored and cached)")
     ap.add_argument("--mode", choices=["auto", "text", "lecture", "pa", "quiz"],
