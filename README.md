@@ -1,66 +1,77 @@
 <div align="center">
 
-<img src="docs/assets/logo.svg" width="72" alt="PaperFold">
+<img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/logo.svg" width="72" alt="TextFold">
 
-# PaperFold
+# TextFold
 
-**Zoom any text for your better understanding**
+**Fold any text, from a one-screen map to every word**
+
+<sub>Formerly PaperFold</sub>
 
 <img alt="Python 3.9+" src="https://img.shields.io/badge/python-3.9%2B-6B5CE7?style=flat-square">
-<img alt="12 languages" src="https://img.shields.io/badge/languages-12-6B5CE7?style=flat-square">
 <img alt="Runs on your computer" src="https://img.shields.io/badge/runs-on_your_computer-E08A3C?style=flat-square">
-<a href="LICENSE"><img alt="Apache License 2.0" src="https://img.shields.io/badge/license-Apache_2.0-6B5CE7?style=flat-square"></a>
+<a href="https://github.com/chenxiachan/textfold/blob/main/LICENSE"><img alt="Apache License 2.0" src="https://img.shields.io/badge/license-Apache_2.0-6B5CE7?style=flat-square"></a>
 
-**English** · [简体中文](README.zh-CN.md)
+**English** · [简体中文](https://github.com/chenxiachan/textfold/blob/main/README.zh-CN.md)
 
-**[Try it →](https://chenxiachan.github.io/paperfold-gallery/)** papers from different fields, a Wikipedia article and a GitHub README, nothing to install.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/sources-dark.webp">
+  <img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/sources.webp" width="880" alt="What TextFold reads: arXiv, PubMed Central, bioRxiv, medRxiv, Wikipedia, GitHub READMEs, any web page, PDF, Word, PowerPoint, Excel, EPUB, HTML, pictures, Markdown, text, CSV and an agent's replies, folded from the full text down to a few words">
+</picture>
+
+**Paste a link:** any web page · arXiv · PubMed Central · bioRxiv · medRxiv · Wikipedia · GitHub<br>
+**Drop files, one or several:** PDF · Word · PowerPoint · Excel · EPUB · HTML · CSV · pictures · Markdown · text<br>
+**Works with:** [Claude Code](#in-claude-code-and-pi) · [Pi](#in-claude-code-and-pi) · [Zotero](#works-on-your-zotero) · [Obsidian](#works-with-your-obsidian)
+
+**[Try the demo →](https://chenxiachan.github.io/textfold/gallery/)** or **[download the app ↓](#get-started)** · [What's new ↓](#whats-new)
 
 <br>
 
-<img src="docs/assets/zoom.gif" width="880" alt="A paper folding from its full text into a map of its sections, and back">
-
-<br><br>
-
-### Also for agent output
-
-Your agent writes more than you have time to read. A [Claude Code mod](https://code.claude.com/docs/en/plugins/mods/overview) folds every reply the same way, one key per level. [More ↓](#in-claude-code)
-
-<img src="docs/assets/textfold.gif" width="880" alt="A reply in Claude Code folding from the full text to two sentences a paragraph, then one, and back, one key at a time">
+<img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/zoom.gif" width="880" alt="A paper folding from its full text into a map of its sections, and back">
 
 </div>
 
-## What's new
-
-- **October 8, 2026: any GitHub README.** Paste a repository's link and read its README at five levels, with its logo, badges and GIFs as on GitHub. A Markdown file keeps the HTML written in it, and the sidebar groups papers, Wikipedia articles, READMEs and documents.
-- **October 8, 2026: read beside the original.** **Original**, at the top of a paper, opens its PDF at the left (from arXiv, PubMed Central or bioRxiv) and shows each paragraph on its page as you read. A new paper opens as soon as it can be read, while its levels are written.
-- **October 7, 2026: your agent's replies fold too.** [TextFold](#in-claude-code) puts the five levels on every Claude Code reply. Press 5 for the answer in one sentence, 1 for every word.
-- **October 6, 2026: more than arXiv.** Paste the link or DOI of a paper on PubMed Central, bioRxiv or medRxiv, or a Wikipedia article in any language, or drag in a Markdown file of your own. Each opens at the same five levels.
-
 ## Read with less in your head
 
-A paper asks you to hold its whole argument in mind while you read it one paragraph at a time. PaperFold holds the argument for you. Fold the paper to see how its sections build on each other, unfold the part you care about, and the sentence you were reading never leaves the screen.
+Choose the level of detail you need, and lower your cognitive load.
 
 | | Level | Each paragraph becomes | In whose words |
 |:-:|---|---|---|
-| **1** | **Full** | the paragraph as written | the authors' |
-| **2** | **Brief** | its one to three key sentences, verbatim | the authors' |
-| **3** | **Key** | its point and the reason for it | AI |
+| **1** | **Full** | the paragraph as written | the author's |
+| **2** | **Brief** | its one to three key sentences, verbatim | the author's |
+| **3** | **Key** | its point and the reason for it | AI, resting on the Brief sentences |
 | **4** | **Takeaway** | one line on the spine of its section | AI |
-| **5** | **Topic** | a few words; the paper becomes a map of section cards | AI |
+| **5** | **Topic** | a few words; the text becomes a map of section cards | AI |
+
+## Also for agent output
+
+Your agent writes more than you have time to read. A [Claude Code mod](https://code.claude.com/docs/en/plugins/mods/overview) folds every reply the same way, one key per level, and an extension does the same in Pi. [More ↓](#in-claude-code-and-pi)
+
+<img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/textfold.gif" width="880" alt="A reply in Claude Code folding from the full text to two sentences a paragraph, then one, and back, one key at a time">
+
+## One fold, three places
+
+- **Read.** Paste a link or drop a file; it opens as a map of its sections that you zoom into. [Get started ↓](#get-started)
+- **Fold your agent's replies.** One key per level in Claude Code and in Pi, with no second model. [In Claude Code and Pi ↓](#in-claude-code-and-pi)
+- **Plug it into your workflow.** `python3 -m textfold get` hands your agent or script a document one level at a time, and an open format lets any program read and write folded text. [For agents ↓](#for-agents-and-scripts)
 
 ## What you get
 
 - **Words that travel.** As you zoom, every word that stays slides to its new place and the rest fade around it.
-- **Zoom under your fingers.** Pinch, ⌘-scroll or drag the level bar. Stop halfway, turn back, or open one paragraph alone.
-- **Always know who is speaking.** The authors' words are set in a serif and AI's in a sans serif. Each paragraph is colored by its role in the argument.
-- **Ask, and see the evidence.** Ask about a passage or about the whole paper. Every answer cites the paragraphs it rests on, one click away.
-- **Notes that zoom with the paper.** Highlight and write in the margin, and what you marked stays as you zoom out. Export to Obsidian, PDF or JSON.
-- **Your language.** Twelve languages, translated sentence by sentence, with every formula as typeset.
+- **Zoom under your fingers.** Stop halfway, turn back, or open one paragraph alone.
+
+- **Beside the original.** Open a paper's or a PDF's own pages next to the text, each paragraph shown where it stands on its page.
+- **Ask AI about exactly what you read.** Select a passage, or ask about the whole text. The answer comes structured: the short answer first, then the evidence, each point citing the paragraph it rests on, one click away.
+- **Notes that zoom with the text.** Highlight and write in the margin; what you marked stays as you zoom out, and is saved with the page.
+
+- **Your language.** Read in many languages, translated sentence by sentence, with every formula as typeset.
+
+- **Your library, in order.** Search it with ⌘K, keep documents in folders (drag one in, or right-click it), and list it by kind, by when each came in, or by when you last opened it.
 
 <table>
 <tr>
-<td width="50%"><img src="docs/assets/notes.png" alt="Highlights in the full text and a note in the margin"></td>
-<td width="50%"><img src="docs/assets/keep.png" alt="The highlighted passages kept at the Takeaway level"></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/notes.png" alt="Highlights in the full text and a note in the margin"></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/keep.png" alt="The highlighted passages kept at the Takeaway level"></td>
 </tr>
 <tr>
 <td align="center"><sub>Highlight and write in the margin…</sub></td>
@@ -68,29 +79,84 @@ A paper asks you to hold its whole argument in mind while you read it one paragr
 </tr>
 </table>
 
+## Works on your Zotero
+
+Click **Zotero library**, under the drop zone, and your library is there as Zotero shows it: your collections, your group libraries, a search. **Read** opens any item.
+
+- **An item on arXiv** opens from arXiv. Any other opens from its PDF, with the PDF beside the text, or from the EPUB, saved web page or Word file it holds. An item with only a DOI opens from Europe PMC.
+- **It keeps what you entered in Zotero:** the title, the authors and the citekey.
+- **It stays on your computer.** TextFold asks the Zotero app you already run, the way citation plugins do: no account, no key, nothing sent to Zotero's servers, and nothing in your library changed.
+
+To turn it on, in Zotero 7: **Settings › Advanced › Allow other applications on this computer to communicate with Zotero**.
+
+## Works with your Obsidian
+
+[TextFold Bridge](https://github.com/adalach/obsidian-textfold-bridge), an Obsidian plugin by [@adalach](https://github.com/adalach), links your notes to what you read in TextFold, the way Zotero and its citation plugins work together: TextFold keeps the documents and what you wrote on them, and your notes keep links into them.
+
+- **Your own notes, folded.** Read a note at TextFold's five levels inside Obsidian, its words travelling as in the reader. After an edit, **Refold** asks the model only for the sections that changed, and your highlights find their passages again.
+- **Drag from the reader into a note.** A paragraph, a whole section, a selection, a card of the Topic map or one of your notes goes in as a callout, with its title, its section and a link back.
+- **Links that open at the place.** A `textfold://` link opens the document at its paragraph, note or level. Hover it in Obsidian to read the passage.
+- **Your TextFold notes beside the note.** A sidebar lists the passages the note cites, and your highlights and questions on the documents it refers to. Import them as a note of their own, and update it later without losing what you wrote in it.
+
+**Set it up:**
+
+1. **Install TextFold:** [download the app](https://chenxiachan.github.io/textfold/#download) for macOS or Windows, or install the Python package ([Get started ↓](#get-started)).
+2. **Open TextFold** (the app, or `python3 -m textfold serve`), and keep it open while you use the plugin. It needs TextFold 0.10.18 or later, and the plugin talks to it on 127.0.0.1 only.
+3. **In Obsidian:** **Settings › Community plugins › Turn on community plugins › Browse**, search for **TextFold Bridge**, then **Install** and **Enable**.
+4. **With the desktop app,** set **Settings › TextFold Bridge › Links › Open links in** to **TextFold app**. By default, links open in your browser.
+
 ## Get started
 
+**[Download the app](https://chenxiachan.github.io/textfold/#download)** for macOS (Apple silicon or Intel) or Windows. Everything it needs is inside, Python included.
+
+Or install the Python package, on any system and for your own pipeline:
+
 ```bash
-git clone https://github.com/chenxiachan/paperfold.git
-cd paperfold
-python3 -m pip install -r requirements.txt
-python3 -m adr serve
+python3 -m pip install textfold
+python3 -m textfold serve
 ```
 
-Open `http://localhost:3017`, which the last command prints. The first time, [connect a model](#connect-a-model); then paste the link or DOI of a paper on arXiv, PubMed Central, bioRxiv or medRxiv, a Wikipedia article, or a GitHub repository (its README), or drag in a Markdown file, and pick a language.
+Open `http://localhost:3017`. The first time, [connect a model](#connect-a-model); then paste a link or drop a file, and pick a language. You need Python 3.9 or newer (the one macOS ships with works).
 
-You need Python 3.9 or newer (the one macOS ships with works). An arXiv paper needs its HTML version, as most papers since late 2023 have; a bioRxiv or medRxiv preprint, or a Wikipedia article in any language, is read from the site itself; any other paper needs its open full text in [Europe PMC](https://europepmc.org) (open-access articles in PubMed Central, and preprints such as Research Square's); a Markdown file needs nothing.
+| Paste or drop | What TextFold reads |
+|---|---|
+| A paper's link or DOI: arXiv, PubMed Central, bioRxiv, medRxiv | its text as the site structures it (an arXiv paper without an HTML version is read from its PDF; another DOI needs an open full text in Europe PMC) |
+| Any other web page | its article, without the menus, the adverts, or the text it hides from its readers |
+| A Wikipedia article, a GitHub repository | the article; the README, with its pictures |
+| A PDF | the paper online when the PDF names one, with your file beside it; any other PDF, on your computer: read by TextFold itself, figures included, or more completely by the PDF engine (MinerU, about 3.4 GB, installed once from the landing), which a scanned PDF needs |
+| A Word, PowerPoint or Excel file, a CSV, an EPUB, a saved web page | the document with its headings, tables, pictures and formulas: read by TextFold itself, or more completely by the PDF engine once it is installed |
+| A picture | its text, read by the PDF engine |
+| An item of your Zotero library | its arXiv paper, else its PDF or other file, else its DOI. [Works on your Zotero ↑](#works-on-your-zotero) |
+| A Markdown or text file | the file as written |
+
+What you read is kept in your system's folder for app data, shared with the desktop app.
+
+<details>
+<summary>Run it from the code instead</summary>
+
+```bash
+git clone https://github.com/chenxiachan/textfold.git
+cd textfold
+python3 -m pip install -r requirements.txt
+python3 -m textfold serve
+```
+
+What you read is then kept in the clone.
+
+</details>
 
 ## Connect a model
 
-PaperFold uses a model you already have, and there is no account to create. It looks for one when it starts; if it finds none, the first page offers the ways in.
+TextFold uses a model you already have, and there is no account to create. It looks for one when it starts; if it finds none, the first page offers the ways in.
 
 | You have | What to do |
 |---|---|
-| Claude Code, Codex or Pi | Nothing. PaperFold finds it and uses it. |
+| Claude Code, Codex, Pi or WorkBuddy | Nothing. TextFold finds it and uses it. WorkBuddy (experimental) brings its models, on your WorkBuddy sign-in; CodeBuddy's own CLI works too. |
 | A ChatGPT plan | Click **Use my ChatGPT plan**. A small bridge starts on your computer and signs in with your account (needs Node.js). |
 | Nothing yet | Click **OpenRouter in one click**. Authorize once, and free models are ready. |
 | An API key | **Settings › Add provider**: Anthropic, OpenAI, DeepSeek, Qwen, Zhipu GLM, Kimi, MiniMax, Google, Ollama, or any OpenAI-compatible endpoint. |
+
+Your questions can go to a stronger model than the one that writes the levels: **Settings › Models › Answering questions**, with how hard it reasons.
 
 ## In the reader
 
@@ -98,35 +164,64 @@ PaperFold uses a model you already have, and there is no account to create. It l
 |---|---|
 | Pinch, or ⌘ / Ctrl + scroll | zoom around the pointer |
 | `1` to `5` | jump to a level |
+| **Cards** or **Map**, beside the levels at Topic | the sections and their topics as cards, or as a mind map |
 | Click a paragraph | open just that paragraph |
 | Click a figure | see it enlarged |
 | **Original**, at the top | read beside the paper's PDF |
+| **Save**, at the top | keep the page as one file, as Markdown at the level you read, or only your notes |
+| **Aa**, at the top | light or dark, the default or paper style, the text's size, serif or sans-serif, the line spacing, the column's width, and which margins show |
+| `F` | focus: the text alone, the bars back at the screen's edge |
+| **Full screen**, in **Aa** | the window fills the screen (⌃⌘F on a Mac, F11 on Windows) |
 | Select text | highlight, write a note, or ask |
-| **Ask the paper**, bottom right | ask about the whole paper |
+| **Ask the paper**, bottom right | ask about the whole text |
 | `L` | next language |
+| `⌘F` (Ctrl+F) | find words in the text: at the level you read, and in the author's words that level leaves out (the paragraph opens at Full while you are there); Enter and ⇧Enter step through them |
+| `⌘K` (Ctrl+K) or `/` | search your library |
+| ⌘ / Ctrl or Shift + click in the sidebar | pick several documents, to move into a folder or delete together |
+| The pin, at the top of the sidebar | keep the sidebar open beside the text |
 
-## Share a paper
+## For agents and scripts
+
+`python3 -m textfold get` gives a document one level at a time, coarsest first, so an agent reads the map before it spends its context on the whole text:
 
 ```bash
-python3 -m adr export 2201.11903
+python3 -m textfold get https://arxiv.org/abs/2512.23916        # the map: every section's topic
+python3 -m textfold get 2512.23916 --level key --section 3      # one section: its points, each with its reason
+python3 -m textfold get report.pdf --json                       # the whole document, in the TextFold format
 ```
 
-This writes one self-contained HTML file to `out/2201.11903/` that opens anywhere without a server. PaperFold's license covers its code: a paper, and the levels and translations made from it, stay under the license its authors chose, shown under every title. Most arXiv papers allow reading but not redistribution, so share a page only when that license allows it, as Creative Commons licenses do.
+A document not folded yet is folded first, with the model you connected. Every line a model wrote is marked as such and anchored to the author's sentences it rests on: [docs/format.md](https://github.com/chenxiachan/textfold/blob/main/docs/format.md) describes the format, for any program that reads or writes folded text.
 
-## In Claude Code
+A running TextFold (the app, or `python3 -m textfold serve`) says where it is in `server.json`, in its data folder (`~/Library/Application Support/TextFold` on a Mac, `%LOCALAPPDATA%\TextFold` on Windows, `~/.local/share/textfold` on Linux, the clone when run from one): `{"format": "textfold/server", "version": 1, "url": "http://127.0.0.1:<port>", "port": <port>, "pid": <pid>, "textfold": "<version>", "started": "<UTC time>"}`. The file goes when the server stops; one left behind (a server ended outright) names an address that answers nothing.
 
-TextFold puts the five levels on every reply in Claude Code. Press 5 for the answer in one sentence, 3 for the point of every paragraph, 1 for every word. Nothing is paraphrased, so at every level you read exactly what Claude said.
+An agent in a browser that offers WebMCP, a draft web standard (tried in Codex's own browser), finds TextFold's own operations on its pages as tools: it reads the passage you are reading or selected, and, when you ask, saves a note on an exact passage, imports a file or a Zotero item, or sorts your folders. Nothing changes in a browser without it. [docs/webmcp.md](https://github.com/chenxiachan/textfold/blob/main/docs/webmcp.md) lists the tools. Contributed by [@peitianyi23-sudo](https://github.com/peitianyi23-sudo).
+
+## Save a page
+
+**Save**, at the top of the reader, keeps a page as one HTML file that opens anywhere without a server: its levels, the notes you choose and, if you like, its original PDF to read beside it. It can also keep the whole text as Markdown at the level you are reading, your notes under their paragraphs (at Topic, an outline that a mind-map plugin draws), or only your notes, as a page, a PDF, Markdown for Obsidian or JSON. From the command line, the page without your notes:
+
+```bash
+python3 -m textfold export 2512.23916
+```
+
+TextFold is a tool, and its license covers its code. When you share a file, follow the terms of the original text, shown under its title.
+
+## In Claude Code and Pi
+
+TextFold puts the five levels on every reply in Claude Code and in Pi. Press 5 for the answer in one sentence, 3 for the point of every paragraph, 1 for every word (in Pi, hold Alt). Nothing is paraphrased, so at every level you read exactly what the model said.
 
 <details>
-<summary><b>Install it, and see what each level gives you</b></summary>
+<summary><b>In Claude Code: install it, and see what each level gives you</b></summary>
 
 <br>
+
+<img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/textfold.gif" width="880" alt="A reply in Claude Code folding from the full text to two sentences a paragraph, then one, and back, one key at a time">
 
 It needs Claude Code 2.1.287 or later, in the terminal or in the Code tab of the Desktop app.
 
 ```bash
-claude plugin marketplace add chenxiachan/paperfold
-claude plugin install textfold@paperfold
+claude plugin marketplace add chenxiachan/textfold
+claude plugin install textfold@textfold
 ```
 
 | Key | Level | What you get |
@@ -134,24 +229,108 @@ claude plugin install textfold@paperfold
 | **1** | **Full** | every word Claude wrote |
 | **2** | **Brief** | each point, with the reason behind it |
 | **3** | **Points** | just the points, at a glance |
-| **4** | **Outline** | the map of a long reply: its sections, and what each one says |
+| **4** | **Outline** | the map of a long reply: its sections, and what each one says (a reply without headings shows its points) |
 | **5** | **Gist** | the answer, in one sentence |
 
 Type the digit while the prompt is empty, or pick a level in the row above the prompt. Short replies stay whole: one under about 80 words, or one a fold would barely shorten, always shows as written.
 
 **Start folded.** A session starts at Full. To start at another level, run `/config` and set **Starting level**; in the session, the row above the prompt and the keys 1 to 5 still change it.
 
-**Why you can trust a fold.** TextFold asks Claude to lead with the point: the answer first in every reply, the key sentence first in every paragraph. A fold keeps what Claude put first. There is no second model and no summary, so a fold costs nothing, takes no time, and never puts words in Claude's mouth.
+**Why you can trust a fold.** TextFold asks Claude to lead with the point: the answer first in every reply, the key sentence first in every paragraph. A fold keeps what Claude put first. There is no second model and no summary, so a fold costs nothing and takes no time.
 
-More in [plugins/textfold](plugins/textfold/README.md).
+More in [plugins/textfold](https://github.com/chenxiachan/textfold/blob/main/plugins/textfold/README.md).
+
+</details>
+
+<details>
+<summary><b>In Pi: install it, and see it fold</b></summary>
+
+<br>
+
+<img src="https://raw.githubusercontent.com/chenxiachan/textfold/main/docs/assets/pi-think.gif" width="880" alt="A coding turn in Pi, its thinking and its reply, folding a level at a time until each is one sentence, by key and by a click on the row">
+
+An extension puts the same five levels on every reply in [Pi](https://pi.dev). It needs Pi 1.2.0 or later, on Node 22.15 or later.
+
+```bash
+git clone https://github.com/chenxiachan/textfold.git
+pi install ./textfold/plugins/pi-textfold
+```
+
+Hold Alt and type the digit, click a level in the row above the prompt, or type `/fold` and a level: `/fold 3`, `/fold points`, `/fold off`. Every reply folds in place, the earlier ones too, and so does the model's thinking, so a long coding turn reads in a few lines. The level stays with the session, and `/fold calibrate` teaches the keys on any keyboard. On a Mac, let the terminal send Option as Meta, or Option+1 types ¡. It folds with the mod's own engine, so a reply reads the same at each level in Claude Code and in Pi.
+
+More in [plugins/pi-textfold](https://github.com/chenxiachan/textfold/blob/main/plugins/pi-textfold/README.md). Contributed by [@jlamweil](https://github.com/jlamweil).
+
+</details>
+
+## What's new
+
+- **October 25, 2026: find in the text, diagrams drawn, and the library in a folder you choose.** ⌘F (Ctrl+F) finds words in the text, at the level you read and in the author's words that level leaves out: a step to one of those opens its paragraph at Full, in place. A diagram written in Mermaid, in a Markdown file or on a web page, is drawn, light or dark as the page is. In Settings, **Library folder** copies the library into another folder and uses it there, or opens a library already in a folder. TextFold switches when it next starts, and the library it was copied from stays as it was. Thanks to [@adalach](https://github.com/adalach), [@Yanksi](https://github.com/Yanksi) and [@kvistgaard](https://github.com/kvistgaard).
+- **October 24, 2026: highlights in shades, and Hindi read as Hindi.** A highlight keeps the colour of the level it was made at, in a shade of it: light, medium or deep. Pick the shade from the dots beside **Highlight** in the bar over a selection, or change it in the note. In **Aa**, each level's colour can be any of eight. A Topic card dragged into a note carries the summary under its title. Hindi words stay whole, and a Hindi sentence ends at the danda. The words of a formula's `\text{}` read as written (50% off, not `50\% off`), and the normal text of a Word formula no longer breaks it. A Markdown document's front matter gives its authors as Quarto writes them, without their affiliations. The Python package starts again on Python 3.9, 3.10 and 3.11. Thanks to [@vcdim](https://github.com/vcdim), [@Pharex38](https://github.com/Pharex38) and [@adalach](https://github.com/adalach).
+- **October 23, 2026: links that keep landing, and WorkBuddy on Windows.** A paragraph and a section keep their ids for the life of their document: after an edit, a new conversion of a PDF, or a later TextFold. So a link to one, from Obsidian or from a note, still opens it. A link to a paragraph that is no longer in the text opens the section it was in, and says so. On Windows, WorkBuddy 5.8 is found again, wherever it was installed. Thanks to [@adalach](https://github.com/adalach) and [@LyotoDS](https://github.com/LyotoDS).
+
+<details>
+<summary>Earlier</summary>
+
+- **October 23, 2026: a highlight lights what you selected.** A highlight made at Key or Takeaway lights every word you selected, the model's too. Before, only the words that came from the author's text lit up, and none when you had selected only the model's. Each level has its own colour: yellow for Full and Brief, violet for Key, blue for Takeaway. The levels no longer light each other's highlights, and **Keep my highlights** still brings the author's passages up to Key and Takeaway. In a note, Enter keeps it and closes it, and Shift+Enter starts a new line (on a phone, Enter starts a new line). Opening another document no longer downloads the app's scripts and styles again, which helps most when you read from a server, on a phone. Thanks to [@adalach](https://github.com/adalach) and [@LumenYoung](https://github.com/LumenYoung).
+- **October 22, 2026: an accurate conversion keeps your languages and notes, and phones read better.** A PDF converted again accurately is read again in every language it had, and your notes on it find their passages in the new text. A translation of the fast conversion's text no longer lands on the new one, outdated and on the wrong paragraphs. An outdated translation has **Update** at the top of the language menu. On a phone, the button that opens the sidebar no longer covers the logo, and a wide formula scrolls in its own box. A long formula in a Markdown document or a converted PDF keeps its box on every screen, and in a list it is shown. A `textfold://` link to a later part of a split paragraph opens it. Thanks to [@LumenYoung](https://github.com/LumenYoung) and [@adalach](https://github.com/adalach).
+- **October 22, 2026: figures as TeX drew them, and full screen.** In an arXiv paper, a drawing whose words the browser sets itself (a TikZ picture) can have them run out of its boxes, on arXiv's own page too. A button under such a drawing takes the paper's figures of that kind from its PDF, as TeX set them, and another puts them back; nothing is downloaded until you press it. **Full screen** in **Aa** fills the screen, and the Topic map opens beside the original pages too. At Brief, the words that go on to Key stand out by a step, not a jump, and the paper style keeps the default's text colours.
+- **October 22, 2026: lighter on your disk.** Pictures are kept as WebP as they come in: an arXiv paper's figures take a fifth of the space or less, and download four at a time, so a new paper opens sooner. Pictures already in your library stay as they are. The app's copy of the pictures and PDFs it showed stays under 32 MB, and a downloaded update is removed once it is installed. A deleted document stays in papers/.trash for 30 days, then it is erased. At Key and Takeaway, a figure of several panels shows them side by side, no longer one under another and cut off.
+- **October 21, 2026: a reader to stay in.** **Aa** has light or dark (or your system's) and a paper style, quieter than white, for either; and the line spacing. A text opens where you left it. `F` leaves the text alone on the screen. The sidebar can be pinned beside the text.
+- **October 21, 2026: tools for an agent in your browser.** In a browser that offers WebMCP, an agent finds TextFold's own operations as tools: it reads the passage you selected and, when you ask, saves a note on it, imports a file or a Zotero item, or sorts your folders. [The tools](https://github.com/chenxiachan/textfold/blob/main/docs/webmcp.md). Thanks to [@peitianyi23-sudo](https://github.com/peitianyi23-sudo).
+- **October 21, 2026: Topic as a mind map.** At Topic, **Map** beside the levels draws the sections and their topics as a mind map: click a topic to read its paragraph, click a section to fold it. Headings stand apart more clearly, **Aa** can hide the margins (the links, the AI answers, your notes), and **Save** keeps the whole text as Markdown at the level you read. On Windows, the installer asks where to install.
+- **October 20, 2026: your type, and several documents at once.** **Aa** at the top sets the text's size, the column's width and serif or sans-serif, for every text. In the sidebar, ⌘-click (Ctrl-click) or Shift-click picks several documents to move into a folder or delete together, and a delete can be undone for a few seconds.
+- **October 20, 2026: several files at once.** Drop or choose several files together: they are read, and their levels written, one after another while you go on reading, and the sidebar shows each.
+- **October 20, 2026: TextFold and Obsidian.** [TextFold Bridge](https://github.com/adalach/obsidian-textfold-bridge), an Obsidian plugin, links your notes to places in TextFold: a paragraph, a section, a note. Drag a paragraph, a section or a selection from the reader into a note and it keeps a link back to where it came from. A note of your own folds at the five levels inside Obsidian, and after an edit it folds again in place, its comments found again in the new text. Thanks to [@adalach](https://github.com/adalach).
+- **October 20, 2026: Pi folds the thinking too.** In Pi, the model's reasoning folds with its reply, so a long coding turn reads in a few lines. Click a level in the row to fold, keep your level when you resume a session, and teach the keys once with `/fold calibrate` on any keyboard. Thanks to [@jlamweil](https://github.com/jlamweil).
+- **October 19, 2026: more languages to read in.** Swedish, Danish, Norwegian, Finnish, Dutch, Polish, Czech, Ukrainian, Turkish, Indonesian and Vietnamese join the languages a text can be read in. Where the interface has no words for a language, it is in English. Thanks to [@Kullenej](https://github.com/Kullenej).
+- **October 15, 2026: Pi's replies fold too.** [An extension for Pi](https://github.com/chenxiachan/textfold/blob/main/plugins/pi-textfold/README.md) puts the five levels on every reply, with the same fold as in Claude Code. Thanks to [@jlamweil](https://github.com/jlamweil).
+- **October 15, 2026: PDFs open without the engine.** A PDF with its own text, as most papers have, opens at once, its figures cut from the page; only a scan still needs the PDF engine. An arXiv paper with no HTML version is read from its PDF. Thanks to [@sylvainHellin](https://github.com/sylvainHellin).
+- **October 15, 2026: your library, and your questions.** Search the library, keep documents in folders, and list them by when they came in or were last opened. A question has its own send and stop, any turn of a conversation can be deleted, and questions can go to a stronger model than the one that writes the levels. Thanks to [@suhyungJang](https://github.com/suhyungJang).
+- **October 14, 2026: an app for Mac and Windows.** Download TextFold for macOS (Apple silicon or Intel, signed and notarized by Apple) or Windows, with everything it needs inside. It finds Claude Code, Codex or Pi on your computer, and updates itself when you say so. [Download ↓](#get-started)
+- **October 14, 2026: your Zotero library.** **Zotero library**, under the drop zone, shows your library and its collections as Zotero does, and opens any item in a click: from arXiv when it is there, else from its own PDF. Thanks to [@adalach](https://github.com/adalach). [Works on your Zotero ↑](#works-on-your-zotero)
+- **October 14, 2026: arXiv pages, read more safely.** What could run script in a page is taken out before the reader draws it, and its figures stay as they were. Thanks to [@neil-patel77](https://github.com/neil-patel77).
+- **October 13, 2026: save a page as one file.** **Save**, at the top of the reader, keeps the page as one HTML file, with your notes and its original PDF if you like, or only your notes. [Save a page ↓](#save-a-page)
+- **October 13, 2026: Word, PowerPoint, Excel, e-books and more.** Drop a Word, PowerPoint or Excel file, a CSV, an EPUB or a saved web page, and it opens at once, formulas included, with nothing more to install.
+- **October 13, 2026: whole figures, and a guide.** A figure the PDF engine cut into pieces now comes out whole, cut from its page. A short guide opens on your first visit, and again from **How it works**.
+- **October 9, 2026: PaperFold is now TextFold.** The same reader, named for everything it folds: papers, web pages, PDFs, READMEs and your agent's replies. Links to the old repository lead here, and your settings move over by themselves.
+- **October 9, 2026: any web page, and PDFs.** Paste any web page's link and read its article at five levels, without the text the page hides from its readers. Drop a PDF: when it names a paper that can be read online, that version opens with your PDF beside it; any other PDF is converted on your computer.
+- **October 9, 2026: for agents.** `python3 -m textfold get <link> --level topic` prints a document's map, and `--section` unfolds the part that matters. [More ↓](#for-agents-and-scripts)
+- **October 8, 2026: any GitHub README.** Paste a repository's link and read its README at five levels, with its logo, badges and GIFs as on GitHub.
+- **October 8, 2026: read beside the original.** **Original**, at the top of a paper, opens its PDF at the left and shows each paragraph on its page as you read. A new paper opens as soon as it can be read, while its levels are written.
+- **October 7, 2026: your agent's replies fold too.** [The Claude Code mod](#in-claude-code-and-pi) puts the five levels on every reply. Press 5 for the answer in one sentence, 1 for every word.
+- **October 6, 2026: more than arXiv.** PubMed Central, bioRxiv, medRxiv, Wikipedia in any language, and your own Markdown files.
 
 </details>
 
 <br>
 
+## Contributors
+
+<a href="https://github.com/neil-patel77" title="@neil-patel77"><img src="https://github.com/neil-patel77.png?size=80" width="40" height="40" alt="@neil-patel77" /></a>
+<a href="https://github.com/adalach" title="@adalach"><img src="https://github.com/adalach.png?size=80" width="40" height="40" alt="@adalach" /></a>
+<a href="https://github.com/suhyungJang" title="@suhyungJang"><img src="https://github.com/suhyungJang.png?size=80" width="40" height="40" alt="@suhyungJang" /></a>
+<a href="https://github.com/sylvainHellin" title="@sylvainHellin"><img src="https://github.com/sylvainHellin.png?size=80" width="40" height="40" alt="@sylvainHellin" /></a>
+<a href="https://github.com/jlamweil" title="@jlamweil"><img src="https://github.com/jlamweil.png?size=80" width="40" height="40" alt="@jlamweil" /></a>
+<a href="https://github.com/lamegoat" title="@lamegoat"><img src="https://github.com/lamegoat.png?size=80" width="40" height="40" alt="@lamegoat" /></a>
+<a href="https://github.com/Kullenej" title="@Kullenej"><img src="https://github.com/Kullenej.png?size=80" width="40" height="40" alt="@Kullenej" /></a>
+<a href="https://github.com/666xz666" title="@666xz666"><img src="https://github.com/666xz666.png?size=80" width="40" height="40" alt="@666xz666" /></a>
+<a href="https://github.com/peitianyi23-sudo" title="@peitianyi23-sudo"><img src="https://github.com/peitianyi23-sudo.png?size=80" width="40" height="40" alt="@peitianyi23-sudo" /></a>
+<a href="https://github.com/mcardZH" title="@mcardZH"><img src="https://github.com/mcardZH.png?size=80" width="40" height="40" alt="@mcardZH" /></a>
+<a href="https://github.com/momoko-sketch" title="@momoko-sketch"><img src="https://github.com/momoko-sketch.png?size=80" width="40" height="40" alt="@momoko-sketch" /></a>
+<a href="https://github.com/Knoety" title="@Knoety"><img src="https://github.com/Knoety.png?size=80" width="40" height="40" alt="@Knoety" /></a>
+<a href="https://github.com/LumenYoung" title="@LumenYoung"><img src="https://github.com/LumenYoung.png?size=80" width="40" height="40" alt="@LumenYoung" /></a>
+<a href="https://github.com/LyotoDS" title="@LyotoDS"><img src="https://github.com/LyotoDS.png?size=80" width="40" height="40" alt="@LyotoDS" /></a>
+<a href="https://github.com/Pharex38" title="@Pharex38"><img src="https://github.com/Pharex38.png?size=80" width="40" height="40" alt="@Pharex38" /></a>
+<a href="https://github.com/vcdim" title="@vcdim"><img src="https://github.com/vcdim.png?size=80" width="40" height="40" alt="@vcdim" /></a>
+<a href="https://github.com/Yanksi" title="@Yanksi"><img src="https://github.com/Yanksi.png?size=80" width="40" height="40" alt="@Yanksi" /></a>
+
+Contributions are welcome: start with [CONTRIBUTING.md](https://github.com/chenxiachan/textfold/blob/main/CONTRIBUTING.md).
+
+<br>
+
 <div align="center">
 
-**If PaperFold makes papers easier to read, ⭐ star it so others can find it.**
+**If TextFold helps you read, ⭐ star it so others can find it.**
 
 </div>
 
@@ -159,6 +338,8 @@ More in [plugins/textfold](plugins/textfold/README.md).
 
 <div align="center">
 
-[Apache 2.0](./LICENSE) © 2026 Xia Chen · [Development](docs/DEVELOPMENT.md) · [Contributing](CONTRIBUTING.md) · [Feedback](https://github.com/chenxiachan/paperfold/issues)
+<sub>Built on [trafilatura](https://github.com/adbar/trafilatura), which finds the article on a web page, [pdf-inspector](https://github.com/firecrawl/pdf-inspector), which reads a PDF's own text, [PDFium](https://pdfium.googlesource.com/pdfium/) by way of [pypdfium2](https://github.com/pypdfium2-team/pypdfium2), which cuts its figures, [MinerU](https://github.com/opendatalab/MinerU), the PDF engine, and [mammoth](https://github.com/mwilliamson/python-mammoth), which reads Word files; PDFs are shown with [PDF.js](https://github.com/mozilla/pdf.js) and formulas with [KaTeX](https://katex.org). Thanks to their authors.</sub>
+
+[Apache 2.0](https://github.com/chenxiachan/textfold/blob/main/LICENSE) © 2026 Xia Chen · [Development](https://github.com/chenxiachan/textfold/blob/main/docs/DEVELOPMENT.md) · [Format](https://github.com/chenxiachan/textfold/blob/main/docs/format.md) · [Contributing](https://github.com/chenxiachan/textfold/blob/main/CONTRIBUTING.md) · [Security](https://github.com/chenxiachan/textfold/blob/main/SECURITY.md) · [Feedback](https://github.com/chenxiachan/textfold/issues)
 
 </div>

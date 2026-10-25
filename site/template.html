@@ -1,0 +1,108 @@
+<header class="nav">
+  <a class="brand" href="{{home}}" aria-label="TextFold">
+    <svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><rect class="b1" x="2" y="3" width="16" height="2.4" rx="1.2"/><rect class="b2" x="2" y="8.8" width="11" height="2.4" rx="1.2"/><rect class="b3" x="2" y="14.6" width="5" height="2.4" rx="1.2"/></svg>
+    <span>TextFold</span>
+  </a>
+  <nav aria-label="{{nav_download}}">
+    <a class="opt" href="#download">{{nav_download}}</a>
+    <a href="gallery/">{{nav_gallery}}</a>
+    <a class="opt" href="#pipeline">{{nav_pipe}}</a>
+    <a class="opt" href="{{readme}}" rel="noopener">{{nav_docs}}</a>
+    <a href="{{repo}}" rel="noopener">★ GitHub</a>
+    <a class="lang" href="{{lang_href}}" hreflang="{{lang_other_code}}" data-lang-switch>{{lang_other}}</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-text">
+      <h1>{{h1}}</h1>
+      <pre class="ascii-line" data-options='{{typer_json}}'>{{sub}}</pre>
+      <div class="ctas">
+        <a class="cta primary" data-cta href="{{dl_mac_arm_url}}"><span class="cta-t" data-cta-t>{{cta_mac}}</span><span class="cta-s" data-cta-s>{{cta_mac_sub}}</span></a>
+        <div class="cmd"><code>python3 -m pip install textfold</code><button type="button" class="copy" data-copy="python3 -m pip install textfold" data-done="{{copied}}">{{copy}}</button></div>
+      </div>
+    </div>
+    <figure class="logo-fig" hidden><canvas class="logo-art" role="img" aria-label="{{logo_alt}}"></canvas></figure>
+  </section>
+
+  <figure class="demo">
+    <div class="frame"><video src="{{assets}}clips/levels.mp4" poster="{{assets}}clips/levels.jpg" autoplay muted loop playsinline width="1600" height="900" aria-label="{{video_cap}}"></video></div>
+    <figcaption>{{video_cap}} <a href="https://arxiv.org/abs/2512.23916" rel="noopener">arXiv:2512.23916</a></figcaption>
+  </figure>
+
+  <section id="download" class="band">
+    <div class="wrap wide">
+      <h2>{{dl_h}}</h2>
+      <article id="pipeline" class="card wide" data-os="py">
+        <div class="py-text">
+          <p class="you">{{for_you}}</p>
+          <h3>{{pipe_h}}</h3>
+          <p class="for">{{pipe_p}}</p>
+          <p class="pl-links">{{pipe_links}}</p>
+        </div>
+        <div class="py-code">
+          <pre><code>python3 -m pip install textfold
+python3 -m textfold get https://arxiv.org/abs/2512.23916 --level topic
+python3 -m textfold get 2512.23916 --level key --section 3
+python3 -m textfold get report.pdf --json</code></pre>
+          <button type="button" class="copy" data-copy="python3 -m pip install textfold" data-done="{{copied}}">{{copy}}</button>
+          <p class="agent"><b>{{agent_h}}</b> · {{agent_p}}</p>
+          <pre><code>claude plugin marketplace add chenxiachan/textfold
+claude plugin install textfold@textfold</code></pre>
+        </div>
+      </article>
+      <h3 id="apps" class="sub">{{apps_h}}</h3>
+      <p class="sub-lead">{{app_p}}</p>
+      <div class="cards">
+        <article class="card" data-os="mac-arm">
+          <p class="you">{{for_you}}</p>
+          <h3>{{dl_mac_arm_os}}</h3>
+          <p class="for">{{dl_mac_arm_for}}</p>
+          <p class="fine">{{dl_mac_signed}}</p>
+          <a class="btn" href="{{dl_mac_arm_url}}">{{dl_btn_dmg}}</a>
+        </article>
+        <article class="card" data-os="mac-x64">
+          <p class="you">{{for_you}}</p>
+          <h3>{{dl_mac_x64_os}}</h3>
+          <p class="for">{{dl_mac_x64_for}}</p>
+          <p class="fine">{{dl_mac_signed}}</p>
+          <a class="btn" href="{{dl_mac_x64_url}}">{{dl_btn_dmg}}</a>
+        </article>
+        <article class="card" data-os="win">
+          <p class="you">{{for_you}}</p>
+          <h3>{{dl_win_os}}</h3>
+          <p class="for">{{dl_win_for}}</p>
+          <p class="fine">{{dl_win_note}}</p>
+          <a class="btn" href="{{dl_win_url}}">{{dl_btn_exe}}</a>
+        </article>
+      </div>
+      <p class="which">{{which_mac}}</p>
+      <p class="meta">{{app_meta}} <a href="{{repo}}/releases/latest" rel="noopener">{{notes}}</a></p>
+    </div>
+  </section>
+
+  <section id="see" class="wrap wide">
+    <h2>{{see_h}}</h2>
+    <div class="clips">
+      <figure><video data-src="{{assets}}clips/pdf.mp4" poster="{{assets}}clips/pdf.jpg" muted loop playsinline width="1600" height="900"></video><figcaption>{{clip02}}</figcaption></figure>
+      <figure><video data-src="{{assets}}clips/notes.mp4" poster="{{assets}}clips/notes.jpg" muted loop playsinline width="1600" height="900"></video><figcaption>{{clip04}}</figcaption></figure>
+      <figure><video data-src="{{assets}}clips/language.mp4" poster="{{assets}}clips/language.jpg" muted loop playsinline width="1600" height="900"></video><figcaption>{{clip03}}</figcaption></figure>
+      <figure><video data-src="{{assets}}clips/word.mp4" poster="{{assets}}clips/word.jpg" muted loop playsinline width="1600" height="900"></video><figcaption>{{clip06}}</figcaption></figure>
+    </div>
+    <p id="credit" class="fine">{{credit}}</p>
+  </section>
+
+  <section id="faq" class="wrap">
+    <h2>{{faq_h}}</h2>
+    <div class="faq">{{faq}}</div>
+    <p class="readme">{{readme_line}}</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="links"><a href="{{readme}}" rel="noopener">{{foot_readme}}</a> · <a href="{{repo}}/blob/main/docs/format.md" rel="noopener">{{foot_format}}</a> · <a href="https://pypi.org/project/textfold/" rel="noopener">PyPI</a> · <a href="{{repo}}/releases" rel="noopener">{{foot_releases}}</a> · <a href="gallery/">{{foot_demo}}</a> · <a href="{{repo}}" rel="noopener">★ GitHub</a></p>
+    <p class="fine">{{foot_license}} · {{hero_note}}</p>
+  </div>
+</footer>

@@ -92,9 +92,9 @@
       "consent": true,
       "field": {"en": "GitHub README", "zh": "GitHub README", "de": "GitHub-README"},
       "why": {
-        "en": "A README read like a paper: ThoughtDAG, an infinite canvas where conversations with language models grow into an editable thought graph, by the author of PaperFold.",
-        "zh": "像读论文一样读 README：ThoughtDAG 是 PaperFold 作者的另一个项目，一张无限画布，让和大模型的对话长成一张可以编辑的思维图。",
-        "de": "Ein README, gelesen wie eine Arbeit: ThoughtDAG, vom Autor von PaperFold, eine unendliche Leinwand, auf der Gespräche mit Sprachmodellen zu einem bearbeitbaren Gedankengraphen wachsen."
+        "en": "A README read like a paper: ThoughtDAG, an infinite canvas where conversations with language models grow into an editable thought graph, by the author of TextFold.",
+        "zh": "像读论文一样读 README：ThoughtDAG 是 TextFold 作者的另一个项目，一张无限画布，让和大模型的对话长成一张可以编辑的思维图。",
+        "de": "Ein README, gelesen wie eine Arbeit: ThoughtDAG, vom Autor von TextFold, eine unendliche Leinwand, auf der Gespräche mit Sprachmodellen zu einem bearbeitbaren Gedankengraphen wachsen."
       }
     }
   ]

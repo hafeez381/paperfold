@@ -1,4 +1,4 @@
-# PaperFold: development notes
+# TextFold: development notes
 
 How the reader works, how to run and extend it. For what it is and how to use it, see the [README](../README.md).
 The notes format is [notes-format.md](notes-format.md).
@@ -19,45 +19,76 @@ Serif text is the author's; sans text is a summary. At every level the words tha
 
 ```bash
 python3 -m pip install -r requirements.txt   # beautifulsoup4, lxml, Pillow
-python3 -m adr serve                    # http://localhost:3017  (ThoughtDAG keeps 3001)
+python3 -m textfold serve                    # http://localhost:3017  (ThoughtDAG keeps 3001)
 ```
+
+The same code is a Python package (`pyproject.toml`): `python3 -m pip wheel . --no-deps` builds it, with the reader's
+pages (`textfold/web/`) inside, and `pip install textfold` gives the `textfold` command. The docs write `python3 -m textfold` instead: macOS's own Python
+installs a user's packages with their commands in `~/Library/Python/3.9/bin`, which is not on the PATH, so `textfold`
+alone is not found there, and `python3 -m textfold` always is. Run from a clone, papers are
+kept in the clone; installed, in the system's folder for app data (`store.app_data()`, shared with the desktop app).
 
 The landing takes a link or ID (arXiv, PubMed Central, Europe PMC, bioRxiv, medRxiv, a DOI, Wikipedia), or a Markdown
 file (the dashed box under the bar, or dropped anywhere on the page), and a language; a line under the bar names
 the sources it reads; the sidebar lists every paper generated so far. In a paper,
 the language menu switches between generated languages, generates a new one, or regenerates the current one.
-Two languages. The paper is read in one (the menu at the top right, 12 languages: English, 简体中文, 繁體中文,
-日本語, 한국어, Español, Français, Deutsch, Português, Italiano, Русский, हिन्दी): its text, and the names of its own
-parts (figures, tables, theorems, references, equations). The interface speaks the reader's own: the browser's,
-or the one chosen in Settings (kept in the browser, `pf-ui-lang`). A question is answered in the language it is
-asked in, the interface's when that is unclear.
+One language, the reader's, any of `textfold/langs.py`: the browser's, or the one last chosen (kept in the browser,
+`pf-ui-lang`; the page tells the server too, the settings' `lang`, which `GET /api/models` reports for other programs,
+and `GET /api/langs` lists the languages). A paper is read in it: its text, and the names of its own parts (figures, tables, theorems, references,
+equations). The interface speaks it when `web/i18n.js` has its words (English, 简体中文, 繁體中文, 日本語, 한국어, Español,
+Français, Deutsch, Português, Italiano, Русский, हिन्दी), and English otherwise, as are then the names of the paper's
+parts. A switch of either is a switch of both: the paper's menu at the top right, a language generated there, Settings,
+or the two menus of the landing (the one beside the bar offers every language a text can be read in, the one at the
+top right the interface's). A paper that has not that language yet opens in one it has, and the interface stays;
+nothing is generated unasked. A question is answered in the language it is asked in, the reader's when that is
+unclear.
 
-Where things are kept: the code in the project (`adr/`, `web/`); papers and exports in `papers/` and `out/` of the
-project, or wherever `PAPERFOLD_DATA` points; settings and keys in `~/.paperfold/`.
+Where things are kept: the code in the project (`textfold/`, with the reader's pages in `textfold/web/`); papers and exports in `papers/` and `out/` of the
+project, or wherever `TEXTFOLD_DATA` points (`PAPERFOLD_DATA`, its earlier name, is read too); settings and keys in
+`~/.textfold/`. While a server runs, `server.json` in the data folder says where it is, for the programs that
+work with it (`server.announce`: format, version, url, port, pid, TextFold's version, when it started, in UTC); it is
+removed when the server stops (^C, or SIGTERM, the app's `server.kill()`), unless a server started since has written its own.
+
+The app (`desktop/`, see its README): an Electron window around the same server, with its own CPython
+(python-build-standalone) and packages, so a reader installs nothing. For macOS, Apple silicon and Intel, signed and
+notarized with the certificate ThoughtDAG uses, and for Windows; each built on its own system by
+`.github/workflows/desktop.yml` when a version is tagged, beside the package for PyPI.
 
 A gallery for a free static host: `tools/gallery.json` lists one paper per field, each with its field and a line on
 why it is worth reading in every gallery language (en, zh, de). `python3 tools/gallery.py --make <model>` generates
 what the list lacks in a folder of its own (`out/gallery/papers`; a paper already in the library starts from there,
 without its notes), and `python3 tools/gallery.py` writes `out/gallery/site/`: an index in the three languages and
-each paper's static reader, opened at the Topic level. Only papers whose license lets anyone share a derivative go in
+each paper's static reader, opened at the Topic level. A paper with a PDF (an arXiv paper) gets it beside its page, with
+PDF.js in `assets/`, so Original shows its typeset pages there as in the app; a PDF over 4 MB has its large pictures
+made smaller with pikepdf (`pip install -r tools/requirements-gallery.txt`; fonts and text untouched), and without it
+the build stops rather than put the whole PDF online. Only
+papers whose license lets anyone share a derivative go in
 (CC BY, BY-SA, BY-NC, BY-NC-SA, CC0); `"consent": true` adds a paper whose authors agree. Before a paper goes public its text is proofread:
 `--review` writes each paper's sentences and levels in every language to `out/gallery/review/`, and the corrections go
 in `out/gallery/fixes/<id>.json`, which the build puts through the same assembly as the model's replies (only the
 corrected fields change; the generated layers stay as they are). The corrections hold the papers' text, so they live in
 the gallery's own repository, github.com/chenxiachan/paperfold-gallery (`fixes/`), not here; the build stops when a
-paper's corrections are missing (`--unproofread` builds without them, for a look only). The site is published from that
-repository by GitHub Pages at https://chenxiachan.github.io/paperfold-gallery/: copy `out/gallery/site` and
-`out/gallery/fixes` into its clone (`out/gallery/deploy`) and push.
+paper's corrections are missing (`--unproofread` builds without them, for a look only). The gallery is served with the
+website, at https://chenxiachan.github.io/textfold/gallery/: copy `out/gallery/site` and `out/gallery/fixes` into that
+repository's clone (`out/gallery/deploy`) and push, then run the website's workflow (Actions › site › Run workflow), which
+takes the gallery from there. The repository's own Pages keeps its old address, each page sending on to its new one.
 
 Models (⚙ Model & API), ported from ThoughtDAG's model access:
 
 - **Agents on this computer**, found at startup (and on Rescan) on PATH, the login shell's PATH, the usual install
-  directories and the node version managers. Claude Code, Codex and Pi run generations, each listing its own models
-  (Pi brings whatever providers it is configured with); Gemini CLI, Qwen Code, opencode, Cursor Agent, Kimi CLI, Amp,
+  directories and the node version managers. Claude Code, Codex, Pi and CodeBuddy run generations, each listing its own models
+  (Pi brings whatever providers it is configured with; CodeBuddy, WorkBuddy's copy of it first, the account's); Gemini CLI, Qwen Code, opencode, Cursor Agent, Kimi CLI, Amp,
   Goose, Crush, Droid, Copilot CLI, iFlow and Aider are reported when present. Claude Code is called without the
   user's settings and CLAUDE.md (`--setting-sources project,local` in a scratch folder; again with them if that fails
-  to sign in).
-- **Two easy ways in** (`adr/bridges.py`, as in ThoughtDAG):
+  to sign in). CodeBuddy is called the same way, but with its user settings (without them it has no sign-in and
+  waits), `--tools StructuredOutput` (the one tool its structured output needs) and WorkBuddy's quiet switches (no
+  memory, no reminders: ~400 tokens of its own a call); WorkBuddy's copy runs on the app's Electron as node, with
+  WorkBuddy's settings folder, as WorkBuddy runs it (`agents.env_for`). WorkBuddy's copy is not a documented way in,
+  so it is looked for widely and checked (`agents.locate_codebuddy`): WorkBuddy where it runs (the process list), its
+  usual places, where Windows' installer recorded it or a Mac's Spotlight knows it; CodeBuddy inside it by name; the
+  first copy that answers `--version` (on the app's program, else on node), else a codebuddy installed on its own;
+  CodeBuddy's own sign-in when WorkBuddy's settings have none.
+- **Two easy ways in** (`textfold/bridges.py`, as in ThoughtDAG):
   - **ChatGPT plan, local bridge**: openai-oauth (npm) serves the plan as an OpenAI-compatible endpoint on
     127.0.0.1:10531, signed in with Codex's login (or a browser sign-in). Running, it joins the providers on its own
     (as a running Ollama does), with its text models; not running, the providers list has a row to start it (`npx -y openai-oauth@2 --detach`; `npx openai-oauth stop` stops it). On the test
@@ -90,19 +121,26 @@ Models (⚙ Model & API), ported from ThoughtDAG's model access:
   +0.14 on a 5-point scale; Haiku 163 s against 1545 s. A weaker model costs more quality than switching thinking off.
   Without thinking a reply's JSON fails to parse now and then (asked for once more), and a long section's
   translation came back short: translations are made in parts of about 5,000 characters.
-- **API providers**: keys from the environment, or a `.env` here or in `~/.paperfold/`: Zhipu, Qwen, OpenAI,
+- **API providers**: keys from the environment, or a `.env` here or in `~/.textfold/`: Zhipu, Qwen, OpenAI,
   Anthropic, Google, DeepSeek, Kimi, OpenRouter, Ollama. (Until v0.9 ThoughtDAG's `.env` was read too; its providers
   were copied once into the settings.) Others are added in the dialog
   from ThoughtDAG's presets (OpenRouter, Z.ai, 智谱, GLM Coding, Kimi Code, MiniMax, DeepSeek, OpenAI, Google AI Studio,
   Moonshot, Ollama, a ChatGPT bridge, Anthropic, custom): the endpoint's `/models` is fetched and you pick which to offer.
-  Keys added here stay in `~/.paperfold/settings.json` (mode 600), outside the project folder. (Before the name
-  PaperFold they were in `~/.dynamic-reader/`: copied from there once, and left in place.)
+  Keys added here stay in `~/.textfold/settings.json` (mode 600), outside the project folder. (Under earlier
+  names they were in `~/.paperfold/` (PaperFold) or `~/.dynamic-reader/`: copied from there once, and left in place.)
+
+The landing and Settings open from saved configuration and the last discovery results. `GET /api/models` reads
+that snapshot without contacting local services; `POST /api/models/refresh` starts one shared background refresh.
+The page asks for progress only while discovery or the startup agent scan runs, then stops. Opening Settings refreshes
+again. Failed service probes keep that service's previous results and show an error with retry, including on first
+use without results. Agent Rescan, provider Fetch models and the actual model Connection test keep their separate jobs;
+generation still resolves its model when it runs. `tests/test_model_discovery.py` covers opening and refresh failures.
 
 Command line, without the server:
 
 ```bash
-python3 -m adr 2512.23916 --lang zh --lang ja   # generate English + translations, then export
-python3 -m adr export 2512.23916                # one self-contained HTML file in out/<id>/
+python3 -m textfold 2512.23916 --lang zh --lang ja   # generate English + translations, then export
+python3 -m textfold export 2512.23916                # one self-contained HTML file in out/<id>/
 ```
 
 ### Is the same paper always the same?
@@ -123,9 +161,10 @@ Notes: select text anywhere (a paragraph at any level, a section's summary or it
 or ask the model about it (the answer, in the reading language, cites the paragraphs it rests on; a cite opens that
 paragraph to its full text in place). The reader's own notes sit in the left margin, the conversations with the model
 and the links in the right. Full and Brief show whole cards, Key shows them compact, and Takeaway and Topic show only a
-mark, with the notes on hover. Highlights zoom with the words. `#n=<note id>` opens the reader at a note.
+mark, with the notes on hover. Highlights zoom with the words. `#n=<note id>` opens the reader at a note (`&t=<turn>`: a conversation at that turn), `#u=<id>` at a paragraph (`&to=<id>`: the run of them to that one, flashed together), `#s=<id>` at a section (the whole of it flashed; with `#level=`, at a level); one no longer in the text opens the
+section it was in, else the top, and the page says so (`ids.py`). ⌘F (Ctrl+F) finds words in the text (reader.js, `findAll`): in each paragraph's pieces at its level (the model's line at Key, Takeaway and Topic), then in its Full pieces for what that level leaves out, and in section titles, case and accents aside. The words found are marked through `pieces()` (`fd`, the one stepped to `fdc`), so a redraw keeps them; a step to words left out opens their paragraph at Full in place, one paragraph at a time, and a level or language changed finds them again. A paragraph, a heading, a section's summary or a message of a conversation (by the handle beside it on hover), a card of the Topic map (grabbed anywhere), a note's card or a selection, dragged into another app, carries its words and a `textfold://` link back to it ([drag-format.md](drag-format.md)).
 
-What the model is given for a question (`adr/notes.py`, `prompt`): the title, the abstract and a line per section
+What the model is given for a question (`textfold/notes.py`, `prompt`): the title, the abstract and a line per section
 (with where the reader is); the level they read at and whose words it shows (at Key and below, a warning that the
 selection is the model's wording, not the authors'); the selection and its paragraph in the authors' words (or, for a
 section, its summary and each paragraph's point); up to five passages from anywhere in the paper that share the
@@ -135,11 +174,21 @@ prompt asks it to answer from the paper, say where, and keep general knowledge a
 
 The notes button opens the list of every highlight, note and question, by section and filtered by kind: a click flies
 to the passage (opening its paragraph in place where the zoom hides it) and opens the note; × deletes it after a
-second click. Below the list are the exports: the paper as a PDF at the level being read (the column as it stands,
-paragraphs opened in place included, every paragraph drawn at that level first, the notes under their paragraphs, the
-level named on top and the PaperFold mark at the end; ⌘P prints the same), the notes alone as a PDF, Markdown for
-Obsidian (block ids, callouts, links back) and the notes data (JSON, with `made_by`). The notes button is always
-there, so the exports are too.
+second click. Below the list, **Save…** opens the save dialog, which the **Save** button beside the notes opens too:
+every export is there. The whole text: one HTML file (`POST /api/export`: `build.page` with the notes of the kinds
+chosen, in the language being read or all of them; the file opens in that language and keeps its notes apart from any
+other page's in the viewer's browser, `D.saved`; with the original PDF if chosen, and PDF.js, so that the file opens
+the side-by-side view by itself: `D.pdf`, `D.pdfjs`, and a converted PDF's page map, `D.pdfmap`), or a PDF at the level being read (the column as it stands, paragraphs
+opened in place included, every paragraph drawn at that level first, the notes of the kinds chosen under their
+paragraphs, the level named on top and the TextFold mark at the end; ⌘P prints the same). Only the marks: one small
+HTML page made in the browser (the passages quoted, or each mark in its whole paragraph if chosen; the notes, the
+questions and answers with their citations as labels, formulas as MathML, a link to the source, the mark), a PDF,
+Markdown for Obsidian (block ids, callouts, links back) or the notes data (JSON, with `made_by`). The dialog says, for
+every file, that TextFold is a tool and that a file shared follows the terms of the original text; it judges no
+license. Where a file goes, the reader chooses: the desktop app's own save dialog (`save-file`, in `desktop/main.js`),
+Chrome's file picker, else the browser's downloads; a PDF through the system's print dialog. While the file is made (seconds,
+for a whole text with its PDF), the mark folds and unfolds in place of the dialog's buttons. A page that is a file
+(saved, or published) has its mark lead to the repository and ends with it.
 
 The chat (the button in the corner, in the app) asks about the whole paper. Each conversation is a note with
 `on: "paper"`; the model is given the abstract, every paragraph's point section by section (at most 60,000
@@ -148,8 +197,11 @@ The answer cites up to five paragraphs; a cite opens its paragraph in place.
 
 In the app the mark (in the bar and in the sidebar's rail) leads home; the rail's second button opens the list of
 papers. A paper is deleted from the list after a prompt that says what goes with it: its folder (layers, model
-replies, notes) moves to `papers/.trash/<id>-<time>/`, from where it can be moved back. A paper being generated
-cannot be deleted. The format, the contract for every export, is `docs/notes-format.md`; the server keeps notes in
+replies, notes) moves to `papers/.trash/<id>-<time>/`, from where it can be moved back for 30 days: the server erases
+older ones as it starts (`store.empty_trash`). A paper being generated cannot be deleted. The list is searched (⌘K or
+/), ordered by kind, by when each document came in or by when it was
+last opened, and kept in folders, one level deep, a document in one at most: dragged there, or moved from the menu a
+right click opens on it. Folders and dates are in `library.json` beside `papers/` (`library.py`). The format, the contract for every export, is `docs/notes-format.md`; the server keeps notes in
 `papers/<id>/notes.json`, a static page in the browser.
 
 Links: the author's cross-references (parsed) and argument links (one model call: supports / builds on / qualifies /
@@ -175,14 +227,37 @@ Markdown (`markdown.py`): CommonMark with GitHub's tables and strikethrough, foo
 matter (title, authors, license) and math, `$...$` and `$$...$$` by Pandoc's rules and `\(...\)`, `\[...\]` as chat
 models write them; formulas become MathML with their LaTeX as `alttext`, as LaTeXML writes them. A lone image is a
 figure, its caption the paragraph after it ("Figure 1: ...") or its alt text; a "Table 1: ..." paragraph next to a
-table is its caption; a numbered heading ("2.1 Methods") keeps its number apart.
+table is its caption; a numbered heading ("2.1 Methods") keeps its number apart. A diagram written in Mermaid
+(` ```mermaid `, Quarto's ` ```{mermaid} `, or a web page's `<pre class="mermaid">`) keeps its source alone as
+`<pre class="pf-mermaid">` (`semantic.py`, `_diagrams`); the reader draws it with Mermaid, loaded only for a text that
+has one, in the light or dark colours of the page, and where it cannot, the source shows as code (`reader.js`,
+`drawDiagrams`). Like code, it shows at Full and Brief.
 
 A document is stored by `local.py` as a paper is: `papers/md-<title words>-<hash>/` with `source.html` (normalized),
-`source.md`, `meta.json` and `img/`, the images copied from beside the file, downloaded, or decoded, once. The id
+`source.md`, `meta.json` and `img/`, the images copied from beside the file, downloaded, or decoded, once (a large
+PNG or JPEG kept as WebP, at most 3200 px: `picture.py`, as for an arXiv paper's figures). The id
 carries a hash of the text, so the same file opened twice is one paper and an edited file a new one; a stored document
-is never rewritten, since its layers belong to the text they were made from. `python3 -m adr notes.md` does the same
+is never rewritten, since its layers belong to the text they were made from. `python3 -m textfold notes.md` does the same
 from the command line (images found beside the file); the landing sends the file's text (`POST /api/import`), so
 images given by a relative path are left out there and shown by name.
+
+A program that keeps the text where it is written (a note app's plugin) can fold it again after an edit without losing
+the document: `POST /api/import` with the document's `id` replaces its text in place (`local.replace_text`), and
+`/api/generate` with `force` folds it again. The id, the folder, the notes and the model's replies stay. A Markdown
+document's paragraphs are named by their words (`p-<hash>`, `"unit_ids": "text"` in its meta), and every paragraph keeps
+its id for the life of its document (`ids.py`): the ids are written into `source.html` when a text is stored (`data-u`
+on a paragraph, `data-s` on a section; one stored before keeps the ids it is read with), and a text replaced, or a PDF
+converted again, keeps the ids of the paragraphs and sections still there, edited, moved or renamed, so a link to one
+(`#u=`, `#s=`) still lands. A paragraph new in the text gets an id no paragraph had before (a PDF's are named by their
+places, `u<n>`: never the place of one that was there before); one that is gone is kept in `ids.json` with the section
+it was in, where a link to it opens, the page saying so. `GET /api/ids/<id>?u=<id>,…&s=<id>,…` says what each names now:
+`here`, `now` (a section whose paragraphs went to another), `gone` (a paragraph with its `section`) or `unknown`. The
+notes are found again in the new text (notes-format.md, "When the text changes"). The old text and its levels go
+to `previous/` (the last one replaced only), and the levels are made again from the replies kept in `llm-cache/`: the
+model is asked only for the sections whose prompts changed (a section's text; the title, the opening or a heading
+changes them all), and for the argument links when a takeaway changed. A translation's prompt numbers the atoms of the
+whole text, so a section after a formula or a link added or taken out is translated again too. A text being generated
+is not replaced (409).
 
 JATS XML (`jats.py`), the format of PubMed Central, Europe PMC, bioRxiv and medRxiv, PLOS and eLife: sections keep
 their titles (and their markup), figures and tables their labels and captions, formulas the MathML the publisher wrote
@@ -221,12 +296,67 @@ since), under CC BY-SA 4.0.
 The model is still told it reads a paper, and the levels are made in English first: a document in another language
 is read with English levels over its own text. Making the levels in the document's language is the next step.
 
+## PDFs and web pages
+
+A PDF dropped on the landing is read in the browser first (pdf.js, `refsOf` in app.js): an arXiv id from its margin
+stamp, a DOI from its metadata or its first page (only the first: the second is often the references). `POST /api/pdfs`
+takes the file with what was found (`X-Refs`): a paper that resolves is generated from its online version, the file
+kept as its `source.pdf` once it is fetched; an arXiv paper without HTML falls back to the file (or, with none, to
+arXiv's PDF). While the engine is not installed, a PDF that has its words in it is read by TextFold itself
+(`pdftext.py`): pdf-inspector's Markdown, page by page, into the engine's blocks, and each figure found by its caption
+(the drawings and pictures above or below it, up to the prose around them) and cut from its page with pypdfium2
+(`engine.crop_here`). A scanned PDF, and every PDF once the engine is there, goes to
+the PDF engine (`engine.py`): MinerU 4, pinned, in `<app data>/engine` (a PaperFold install in its old place is used
+there), installed from the landing, the settings or `python3 -m textfold engine install`. Its command line only (`mineru-kit
+parse --format zip`), never the `mineru` document library. Fast is MinerU's flash tier (seconds, no model; formulas as
+pictures); accurate is advanced (a vision model, several seconds a page), with `--disable-image-analysis`.
+`pdfdoc.py` turns `structured_content.json` into the document: running heads and page numbers out, the title from the
+page or the file, heading depth from numbering, a figure's panels grouped under the caption that names it, figures from
+after the references put before them, short front matter dropped. A file that waits for the engine is kept in
+`uploads/` with a note of its name and language beside it, and converted once the engine is installed.
+
+Other files take the same road (`POST /api/files`, `take_file`; `doc-<file hash>`, the file kept as `original.<ext>`).
+With the engine installed, it reads them all: Word, PowerPoint, Excel, OpenDocument, RTF, EPUB, HTML and MHTML, CSV,
+OFD (its fast tier only: no model is needed) and pictures (either tier, as a scanned page). Without it, TextFold reads
+the common ones itself, at once (`office.py`): .docx through mammoth, its formulas turned from OMML into LaTeX first
+(`omml.py`, written for what latex2mathml and KaTeX both read); .pptx, .xlsx and .epub from their own XML; .csv and
+.tsv; a saved page's article (.html, .mhtml, its pictures from inside the file); and on a Mac .doc, .rtf and .odt
+through `textutil`. It writes the engine's shape (`structured_content.json` and `images/`), so `pdfdoc.py` stores both
+alike; a file whose structure is its own keeps its headings' depths, its captions and its notes. A picture, an old
+PowerPoint or Excel file, an OpenDocument sheet or deck still wait for the engine; a file the engine fails on falls back
+to `office.py`.
+
+The server has two queues (`Jobs`): generation (model calls) and the engine (installs, conversions), each one job at a
+time; a conversion's `next` is the generation that follows it. A converted PDF opens as soon as it is stored.
+
+Any other link is a web page (`webpage.py`): fetched with TextFold's own user agent, its hidden elements removed (they
+are where text meant for a model is put), its article taken out by trafilatura as Markdown and stored through the
+Markdown path. Too little text (`web-notext`), a refusal (`web-blocked`), and a link to a PDF (fetched, then read as a
+dropped PDF) each have their own answer.
+
+A Zotero library (`zotero.py`): **Zotero library**, under the landing's drop zone and at the foot of the sidebar,
+opens the library chosen (the reader's own, or a group) as Zotero shows it, its collections at the left and the items
+of the one chosen at the right, through Zotero Desktop's local API (`localhost:23119`, read only, on once the reader
+allows other applications to talk to Zotero). `POST /api/zotero/read` reads an item by the best text it has: its arXiv
+paper when it names one, handed back to the page to generate as a pasted link is; else its file (a PDF, an EPUB, a saved
+page, a Word file), where Zotero says it is or in its `storage/`, given to `take_file` as a dropped file is, with its
+DOI as the PDF's `X-Refs`; else its DOI. A file is read only when it is one TextFold reads (a PDF by its first bytes,
+any other by its name), and a file name that leaves `storage/` is not followed. `zotero.json`, in the data folder,
+says which item became which document, so the library marks what is open, and keeps the item's record: a document read
+from the item's own file takes Zotero's title, authors, date, DOI and citekey (`zotero.apply`, once it is stored), and
+lists among the papers. The page may change the library chosen and
+nothing else: Zotero's address and data folder (`"zotero": {"base", "data_dir"}`) are set in the settings file only.
+`tests/test_zotero.py` runs it all against a fake Zotero.
+
+`TEXTFOLD_NO_MODELS=1` makes a server find no model at all (no agent, no bridge, no provider): for test servers and CI,
+so that nothing calls a model by accident. Without a model a document is still fetched and parsed, and reads as written.
+
 ## No other server
 
-A page asks no other server for anything: no font service, no CDN. The fonts (Inter, Source Serif 4, as woff2 subsets)
-and KaTeX live in `web/vendor/`. The app serves them from `/static/vendor/`; a gallery copies them into its `assets/`
-beside the pages; a single exported file carries the Latin faces inside, and KaTeX too when the model wrote math that
-matches no formula of the paper. (Loading Google Fonts sends a visitor's IP address to Google, which a German court
+A page asks no other server for anything: no font service, no CDN. The fonts (Inter, Source Serif 4, as woff2 subsets),
+KaTeX and Mermaid (11.17.2) live in `textfold/web/vendor/`. The app serves them from `/static/vendor/`; a gallery copies them
+into its `assets/` beside the pages; a single exported file carries the Latin faces inside, KaTeX too when the model wrote
+math that matches no formula of the paper, and Mermaid (3.5 MB) when the text has a diagram. (Loading Google Fonts sends a visitor's IP address to Google, which a German court
 found unlawful without consent in 2022.)
 
 ## Smoothness is a rule
@@ -235,7 +365,7 @@ No change may make the zoom less smooth. Measure before and after with the GPU a
 screen actually showed, on a dense paper (2512.23916):
 
 ```bash
-python3 -m adr export 2512.23916
+python3 -m textfold export 2512.23916
 python3 tools/zoombench.py 2512.23916                 # out/compare/<id>/<version>.html pages
 ```
 
@@ -244,29 +374,48 @@ Frame intervals from requestAnimationFrame in a default headless browser hide mo
 ## Layout
 
 ```
-adr/fetch.py    arXiv HTML + metadata, figure images
-adr/parse.py    LaTeXML → units (paragraph, list item, caption) as token streams; math, citations, refs stay atomic
-adr/semantic.py any semantic HTML → the HTML parse.py reads; the sanitizing boundary
-adr/markdown.py a Markdown file → semantic HTML (front matter, footnotes, math)
-adr/local.py    documents from this computer: stored as papers (md-…), with their images
-adr/jats.py     JATS XML → semantic HTML (PubMed Central, Europe PMC, bioRxiv, PLOS, eLife)
-adr/epmc.py     papers from Europe PMC by PMC or PPR id, link or DOI (pmc…, ppr…)
-adr/biorxiv.py  preprints from bioRxiv and medRxiv, from their own JATS (biorxiv-…, medrxiv-…)
-adr/wiki.py     Wikipedia articles, any language edition (wiki-<lang>-<page id>)
-adr/tokens.py   tokenizer, sentence splitter, LCS alignment
-adr/ladder.py   one model call per section; validation; written words aligned to source words for the morph
-adr/links.py    argument links, one call over the whole paper
-adr/translate.py  any language: sentence-aligned translation + short levels, one call per section (langs.py: the 12 languages)
-adr/store.py    versioned layers per paper; assembling a reader from them
-adr/pipeline.py fetch → parse → English ladder + links (once) → translation, with progress
-adr/server.py   local server: pages, /api/papers, /api/jobs (and /api/jobs/stop), /api/generate, /api/settings
-adr/agents.py   local agents: the scan, model catalogs, one-shot runs (claude -p, codex exec, pi -p)
-adr/providers.py API providers: ThoughtDAG's env registry and presets, /models probing
-adr/models.py   one catalog of agent and API models; settings; resolving a model id
-adr/llm.py      the call (cached) for every kind of model; llm_openai.py: OpenAI-compatible endpoints
-adr/build.py    reader pages: app mode (served) and static mode (one file)
-adr/notes.py    the reader's notes (docs/notes-format.md) and questions answered by the model
-web/            reader.js (render + FLIP morph), app.js (sidebar, landing, settings, jobs), i18n.js, CSS, templates
+textfold/fetch.py    arXiv HTML + metadata, figure images
+textfold/picture.py  a picture kept smaller as it comes in: a large PNG or JPEG as WebP (quality 90, at most 3200 px)
+textfold/parse.py    LaTeXML → units (paragraph, list item, caption) as token streams; math, citations, refs stay atomic
+textfold/latexml_safe.py  what an arXiv page may carry into the reader: scripts, handlers and script URLs out, figures kept
+textfold/semantic.py any semantic HTML → the HTML parse.py reads; the sanitizing boundary
+textfold/markdown.py a Markdown file → semantic HTML (front matter, footnotes, math)
+textfold/local.py    documents from this computer: stored as papers (md-…), with their images
+textfold/jats.py     JATS XML → semantic HTML (PubMed Central, Europe PMC, bioRxiv, PLOS, eLife)
+textfold/epmc.py     papers from Europe PMC by PMC or PPR id, link or DOI (pmc…, ppr…)
+textfold/biorxiv.py  preprints from bioRxiv and medRxiv, from their own JATS (biorxiv-…, medrxiv-…)
+textfold/wiki.py     Wikipedia articles, any language edition (wiki-<lang>-<page id>)
+textfold/github.py   a GitHub repository's README (gh-<owner>--<repo>)
+textfold/webpage.py  any other web page: its article (trafilatura), hidden text removed first (web-<host>-<hash>)
+textfold/engine.py   the PDF engine: MinerU in a Python of its own under the app data folder; install, removal, conversion
+textfold/pdftext.py  a PDF with its own text, read without the engine (pdf-inspector); figures found by their captions, cut with pypdfium2
+textfold/pdfdoc.py   a converted PDF as a document: MinerU's structured output into Markdown and HTML (pdf-<file hash>;
+                     another file, doc-<file hash>)
+textfold/office.py   Word, PowerPoint, Excel, CSV, EPUB and saved web pages read without the engine, in its shape
+textfold/omml.py     Office's formulas (OMML) as LaTeX
+textfold/pdf.py      a paper's original PDF for the side-by-side view (source.pdf)
+textfold/pdffigs.py  an arXiv drawing whose words the browser set (TikZ): cut from the paper's PDF when the reader asks
+textfold/zotero.py   a Zotero library through Zotero Desktop's local API; an item read as a link or a dropped file
+textfold/tokens.py   tokenizer, sentence splitter, LCS alignment
+textfold/ladder.py   one model call per section; validation; written words aligned to source words for the morph
+textfold/links.py    argument links, one call over the whole paper
+textfold/translate.py  any language: sentence-aligned translation + short levels, one call per section (langs.py: the languages a text can be read in)
+textfold/store.py    versioned layers per paper; assembling a reader from them
+textfold/pipeline.py fetch → parse → English ladder + links (once) → translation, with progress
+textfold/server.py   local server: pages, /api/papers, /api/jobs (and /api/jobs/stop), /api/generate, /api/settings
+textfold/agents.py   local agents: the scan, model catalogs, one-shot runs (claude -p, codex exec, pi -p)
+textfold/providers.py API providers: ThoughtDAG's env registry and presets, /models probing
+textfold/models.py   one catalog of agent and API models; settings; resolving a model id
+textfold/llm.py      the call (cached) for every kind of model; llm_openai.py: OpenAI-compatible endpoints
+textfold/build.py    reader pages: app mode (served) and static mode (one file)
+textfold/library.py  the sidebar's library: folders, when each document came in and was last opened (library.json)
+textfold/notes.py    the reader's notes (docs/notes-format.md) and questions answered by the model
+textfold/fold.py     the TextFold format (docs/format.md) and a document at one level as Markdown (python3 -m textfold get)
+textfold/web/   reader.js (render + FLIP morph), app.js (sidebar, landing, settings, jobs), i18n.js, CSS, templates
+tests/          python3 -m unittest discover tests: the arXiv page's safety pass, the Zotero library (a fake Zotero),
+                agents on Windows
+desktop/       the app (its README): Electron around the same server, with its own Python; desktop/scripts/smoke.py
+                checks that Python before it ships (.github/workflows/desktop.yml)
 tools/zoombench.py  zoom smoothness as the screen sees it (GPU, 2x, Chrome's frame trace), on out/compare/<id>/ pages
 tools/readme_assets.py  the README's pictures, made from a real paper in the reader
 ```

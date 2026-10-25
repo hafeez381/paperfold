@@ -1,5 +1,7 @@
 # generated per paper: the arXiv source, the model's layers, the reader's notes (papers carry their authors' licenses)
 papers/
+# where a server run from the clone says it is, while it runs (server.py, announce)
+/server.json
 # exported pages (they hold the papers' text and figures)
 out/
 __pycache__/
@@ -12,7 +14,18 @@ tools/modelbench/
 tools/zoombench_ext.py
 research/
 launch/
-# the desktop app is built from its own repository
-desktop/
+# the app: its build tools, the runtime it ships, and the packages it makes
+desktop/node_modules/
+desktop/payload/
+desktop/out/
 # the maintainer's working log, kept on this computer
 STATUS.md
+
+# a pip build from the clone (desktop/build/ is the app's icon and entitlements)
+/build/
+/dist/
+*.egg-info/
+# the website's build (site/build.py): the pages it writes, and the preview with its checks
+site/dist/
+site/preview.html
+site/_*

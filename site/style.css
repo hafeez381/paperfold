@@ -1,0 +1,135 @@
+/* A reading column for the words, wider bands for what moves: the name in block letters, the app in the demo, the
+   downloads. Everything is TextFold's own: its paper ground, its violet, the mark's orange stroke, its three faces
+   (Inter for the interface, Source Serif for what is read, JetBrains Mono for code), as textfold/web/reader.css sets them. */
+:root {
+  --surface: #FAF9F7; --card: #FFFFFF; --ink: #1A1A1A; --ink-2: #4A4540; --muted: #6B6560;
+  --line: #DCD8D1; --line-2: #EFEBE5; --accent: #6B5CE7; --accent-soft: #EDE9FF; --accent-deep: #362680;
+  --warm: #E08A3C; --on-accent: #FFFFFF; --shadow: 0 18px 48px -28px rgba(54, 38, 128, .45);
+  --serif: 'Source Serif 4', 'Source Serif Pro', Georgia, 'Songti SC', serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --col: 920px; --wide: 1100px; --gutter: 20px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface: #1B1915; --card: #24211C; --ink: #EDE9E3; --ink-2: #C9C3BA; --muted: #9C958B;
+    --line: #3A362F; --line-2: #2A2722; --accent: #A79FF4; --accent-soft: #2D2850; --accent-deep: #CFC9FA;
+    --warm: #E8A35E; --on-accent: #17141F; --shadow: 0 18px 48px -28px rgba(0, 0, 0, .7); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --surface: #1B1915; --card: #24211C; --ink: #EDE9E3; --ink-2: #C9C3BA; --muted: #9C958B;
+  --line: #3A362F; --line-2: #2A2722; --accent: #A79FF4; --accent-soft: #2D2850; --accent-deep: #CFC9FA;
+  --warm: #E8A35E; --on-accent: #17141F; --shadow: 0 18px 48px -28px rgba(0, 0, 0, .7); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body { margin: 0; background: var(--surface); color: var(--ink); font: 16px/1.62 var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+code, kbd, pre { font-family: var(--mono); }
+h1, h2 { font-family: var(--serif); font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-size: clamp(26px, 3.2vw, 34px); line-height: 1.15; margin: 0 0 18px; }
+h3 { font-size: 17px; line-height: 1.3; margin: 0; }
+img, video, canvas { max-width: 100%; display: block; }
+video { height: auto; }
+.wrap { max-width: calc(var(--col) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+.wrap.wide { max-width: calc(var(--wide) + 2 * var(--gutter)); }
+main > section.wrap { padding-block: 80px 0; }
+.fine { font-size: 13.5px; color: var(--muted); }
+
+/* ── the bar ─────────────────────────────── */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 12px var(--gutter); background: color-mix(in srgb, var(--surface) 86%, transparent); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line-2); }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font-weight: 650; }
+.mark { width: 26px; height: 26px; }
+.mark .b1, .mark .b2 { fill: var(--accent); } .mark .b2 { fill-opacity: .4; } .mark .b3 { fill: var(--warm); }
+.nav nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.nav nav a { color: var(--ink-2); text-decoration: none; font-size: 14px; font-weight: 550; padding: 6px 10px; border-radius: 8px; }
+.nav nav a:hover { background: var(--line-2); color: var(--ink); }
+.nav nav .lang { border: 1px solid var(--line); }
+
+/* ── the opening: the words at the left; at the right, TextFold's mark in characters, folding (ascii.rest) ─ */
+.hero { max-width: calc(var(--wide) + 2 * var(--gutter)); margin-inline: auto; padding: 60px var(--gutter) 44px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 36px 56px; align-items: center; }
+.hero h1 { font-size: clamp(32px, 4.2vw, 52px); line-height: 1.08; margin: 0; max-width: 18ch; }
+.logo-fig { margin: 0; width: 100%; min-width: 0; justify-self: center; }
+.logo-art { display: block; width: 100%; max-width: 100%; }
+.ascii-line { margin: 16px 0 28px; min-height: 1.6em; font: 500 clamp(16px, 1.6vw, 19px)/1.6 var(--mono); color: var(--ink-2); white-space: pre-wrap; }
+.ctas { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.cta { display: inline-grid; gap: 1px; padding: 13px 22px 12px; border-radius: 14px; text-decoration: none; background: var(--accent); color: var(--on-accent);
+  box-shadow: var(--shadow); transition: transform .15s ease; }
+.cta:hover { transform: translateY(-1px); }
+.cta-t { font-weight: 650; font-size: 17px; }
+.cta-s { font-size: 13px; opacity: .85; }
+.cmd { display: inline-flex; align-items: center; gap: 10px; padding: 9px 10px 9px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.cmd code { font-size: 14px; color: var(--ink); }
+.copy { font: 600 12.5px var(--sans); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.copy:hover { border-color: var(--accent); }
+
+.demo { max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 8px auto 0; padding-inline: var(--gutter); }
+.frame { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--card); box-shadow: var(--shadow); }
+.frame video { width: 100%; }
+.demo figcaption { margin-top: 12px; font-size: 14px; color: var(--muted); }
+.demo figcaption a { color: var(--muted); }
+
+/* ── downloads ───────────────────────────── */
+.band { margin-top: 88px; padding-block: 64px; background: var(--card); border-block: 1px solid var(--line-2); }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 22px 20px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); min-width: 0; }
+.card .for { margin: 0; color: var(--ink-2); }
+.card .fine { margin: 0 0 12px; flex: 1; }
+.card .you { display: none; position: absolute; top: -11px; left: 16px; margin: 0; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 650;
+  background: var(--accent); color: var(--on-accent); }
+.card.is-you { border: 2px solid var(--accent); padding: 21px 19px 17px; }
+.card.is-you .you { display: block; }
+.btn { display: inline-block; align-self: flex-start; padding: 9px 16px; border-radius: 10px; background: var(--accent); color: var(--on-accent); text-decoration: none; font-weight: 600; font-size: 15px; }
+.btn:hover { filter: brightness(1.06); }
+.card.wide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 18px 28px; align-items: start; }
+.py-text { display: flex; flex-direction: column; gap: 6px; }
+.pl-links { margin: 6px 0 0; font-size: 14px; }
+.py-code { position: relative; min-width: 0; }
+.py-code pre { margin: 0; padding: 14px 16px; padding-right: 76px; border-radius: 10px; background: var(--line-2); border: 1px solid var(--line); overflow-x: auto; font-size: 13px; line-height: 1.7; }
+.py-code > .copy { position: absolute; top: 9px; right: 9px; }
+.py-code .agent { margin: 14px 0 8px; font-size: 14px; color: var(--ink-2); }
+.sub { margin: 44px 0 4px; font-size: 20px; }
+.sub-lead { margin: 0 0 18px; color: var(--ink-2); }
+.which { margin: 22px 0 0; font-size: 14.5px; color: var(--ink-2); }
+.which em { font-style: normal; font-family: var(--mono); font-size: .9em; color: var(--ink); }
+.meta { margin: 8px 0 0; font-size: 13.5px; color: var(--muted); }
+
+/* ── see it work ─────────────────────────── */
+.clips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; }
+.clips figure { margin: 0; }
+.clips video { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.clips figcaption { margin-top: 8px; font-size: 15px; font-weight: 550; color: var(--ink); }
+#credit { margin-top: 18px; }
+#credit a { color: var(--muted); }
+
+/* ── questions ───────────────────────────── */
+.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 36px; }
+.faq h3 { font-family: var(--serif); font-size: 19px; font-weight: 600; }
+.faq p { margin: 6px 0 0; color: var(--ink-2); font-size: 15.5px; }
+.readme { margin: 30px 0 0; color: var(--ink-2); }
+
+.foot { margin-top: 96px; padding-block: 40px; border-top: 1px solid var(--line-2); }
+.foot .links { margin: 0 0 8px; font-size: 14.5px; }
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .logo-fig { display: none; }
+  }
+@media (max-width: 860px) {
+  .cards, .card.wide, .clips, .faq { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  :root { --gutter: 16px; }
+  .nav { gap: 10px; }
+  .nav nav { gap: 2px; }
+  .nav nav a { font-size: 13.5px; padding: 6px 7px; }
+  .nav nav .opt { display: none; }   /* a phone keeps the gallery: the downloads open the page */
+  .hero { padding-top: 40px; }
+  }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .cta { transition: none; } }

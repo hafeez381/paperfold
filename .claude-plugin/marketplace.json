@@ -1,6 +1,6 @@
 {
-  "name": "paperfold",
-  "description": "Plugins from PaperFold",
+  "name": "textfold",
+  "description": "Plugins from TextFold",
   "owner": { "name": "Xia Chen" },
   "plugins": [
     {

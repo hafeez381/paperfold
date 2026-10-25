@@ -1,6 +1,6 @@
 # TextFold for Claude Code
 
-Your agent writes more than you have time to read. TextFold folds every Claude Code reply to the level you need, from every word to the answer in one sentence, with one key. A [mod](https://code.claude.com/docs/en/plugins/mods/overview) for Claude Code, from [PaperFold](../../README.md).
+Your agent writes more than you have time to read. TextFold folds every Claude Code reply to the level you need, from every word to the answer in one sentence, with one key. A [mod](https://code.claude.com/docs/en/plugins/mods/overview) for Claude Code, from [TextFold](../../README.md).
 
 <img src="../../docs/assets/textfold.gif" width="880" alt="A reply in Claude Code folding from the full text to two sentences a paragraph, then one, and back, one key at a time">
 
@@ -9,7 +9,7 @@ Your agent writes more than you have time to read. TextFold folds every Claude C
 | **1** | **Full** | every word Claude wrote |
 | **2** | **Brief** | each point, with the reason behind it |
 | **3** | **Points** | just the points, at a glance |
-| **4** | **Outline** | the map of a long reply: its sections, and what each one says |
+| **4** | **Outline** | the map of a long reply: its sections, and what each one says (a reply without headings shows its points) |
 | **5** | **Gist** | the answer, in one sentence |
 
 Type the digit while the prompt is empty, or pick a level in the row above the prompt. A folded reply tells you how much of it you are seeing, and `1` brings back every word. Short replies stay whole: one under about 80 words, or one a fold would barely shorten, always shows as written.
@@ -25,11 +25,11 @@ Nothing is paraphrased. TextFold adds a short section to the system prompt that 
 It needs Claude Code 2.1.287 or later, in the terminal or in the Code tab of the Desktop app.
 
 ```bash
-claude plugin marketplace add chenxiachan/paperfold
-claude plugin install textfold@paperfold
+claude plugin marketplace add chenxiachan/textfold
+claude plugin install textfold@textfold
 ```
 
-To try it from a clone without installing it, start Claude Code with `claude --plugin-dir paperfold/plugins/textfold`.
+To try it from a clone without installing it, start Claude Code with `claude --plugin-dir textfold/plugins/textfold`.
 
 ## Good to know
 
