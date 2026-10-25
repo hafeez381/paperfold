@@ -60,20 +60,23 @@ def mode_of(meta):
 
 
 def detect(text):
-    """A Markdown text's mode, from `textfold-mode:` in its front matter, else its headings and callouts; None: a text."""
+    """A Markdown text's mode, from `textfold-mode: <mode>` in its front matter or in an HTML comment (which outlives
+    TextFold Bridge's export: it keeps no front matter but the title), else its headings and callouts; None: a text."""
     fm = re.match(r"\A---\n(.*?)\n---", text, re.S)
-    m = fm and re.search(r"^(?:textfold|adr)-mode\s*:\s*['\"]?(\w+)", fm.group(1), re.M | re.I)
+    m = (fm and re.search(r"^(?:textfold|adr)-mode\s*:\s*['\"]?(\w+)", fm.group(1), re.M | re.I)) \
+        or re.search(r"<!--\s*textfold-mode\s*:\s*(\w+)\s*-->", text, re.I)
     if m:
         return m.group(1).lower() if m.group(1).lower() in MODES else None
     heads = re.findall(r"^#{1,6}\s+(.+)$", text, re.M)
     n = lambda pat: sum(bool(re.search(pat, h, re.I)) for h in heads)  # noqa: E731
     has = lambda pat: bool(re.search(pat, text, re.I | re.M))  # noqa: E731
+    # a callout's title: as Obsidian writes it (> [!todo] Study plan), or as the Bridge sends it (> **Study plan**)
+    callout = lambda title: has(r"^\s*>\s*(?:\[![\w-]+\][+-]?\s*|\*\*)" + title)  # noqa: E731
     score = {
-        "quiz": 4 * bool(n(r"\bquiz\b|\bviva\b")) + 3 * n(r"practice questions") + 3 * n(r"last-minute checklist") + 2 * has(r"\[!todo\][-+]? *study plan")
-                + 2 * has(r"\[!success\]-? *answer"),
+        "quiz": 4 * bool(n(r"\bquiz\b|\bviva\b")) + 3 * n(r"practice questions") + 3 * n(r"last-minute checklist")
+                + 2 * callout("study plan") + 2 * callout("answer"),
         "pa": 3 * n(r"^\W*batch \d+") + 2 * n(r"^\W*task \d+") + 2 * n(r"the big picture") + 2 * n(r"`[\w/.]+\.py`|viva|^\W*part \w+")
-              + 2 * has(r"\[!question\]-? *self-check") + 2 * has(r"\[!example\]-? *test output")
-              + 2 * has(r"\[!abstract\][-+]? *required evidence"),
+              + 2 * callout("self-check") + 2 * callout("test output") + 2 * callout("required evidence"),
         "lecture": 3 * n(r"^topic inventory") + 3 * n(r"cheat sheet|formula summary") + n(r"^numerical problems")
                    + has(r"nav:start"),
     }

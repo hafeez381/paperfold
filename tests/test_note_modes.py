@@ -6,6 +6,7 @@ Run from the repo root:
     python3 -m unittest tests.test_note_modes
 """
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -84,6 +85,20 @@ class Detect(unittest.TestCase):
         self.assertIsNone(kinds.detect("---\ntextfold-mode: text\n---\n" + LECTURE))
 
 
+    def test_a_note_exported_by_the_bridge_is_told_too(self):
+        """TextFold Bridge sends a note without its front matter (but its title), callouts as bold-titled quotes and
+        no %% comments (its src/flatten.ts): what is left still tells the kind, and a mode in an HTML comment stays."""
+        def bridge(text):
+            text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.S)
+            text = re.sub(r"^(\s*(?:>\s*)+)\[![\w-]+\][+-]?\s*(.+)$", r"\1**\2**\n\1", text, flags=re.M)
+            return re.sub(r"%%.*?%%", "", text, flags=re.S)
+        self.assertEqual(kinds.detect(bridge(LECTURE)), "lecture")
+        self.assertEqual(kinds.detect(bridge(PA.replace("## 0 The big picture", "## Overview"))), "pa")   # by its callouts
+        self.assertEqual(kinds.detect(bridge(QUIZ)), "quiz")
+        self.assertIsNone(kinds.detect(bridge("---\ntextfold-mode: quiz\n---\n" + DIARY)))   # a property: left in Obsidian
+        self.assertEqual(kinds.detect(bridge(DIARY + "\n<!-- textfold-mode: quiz -->\n")), "quiz")
+
+
 def fake_model(asked):
     def once(prompt, schema, spec, timeout, system):
         asked.append((prompt, system))
@@ -123,6 +138,12 @@ class Modes(unittest.TestCase):
         self.assertTrue(prompt.startswith("Assignment notes: PA2 Notes"))
         self.assertIn("quiz trap", prompt)
         self.assertIn("programming assignment", system)
+
+    def test_the_mode_comment_is_not_read_as_text(self):
+        pid = local.import_text(DIARY + "\n<!-- textfold-mode: pa -->\n", "diary.md")
+        doc = store.parsed(pid)
+        self.assertEqual(doc["meta"]["mode"], "pa")
+        self.assertFalse(any("textfold-mode" in "".join(t.get("t", "") for t in u["toks"]) for u in doc["units"].values()))
 
     def test_a_text_keeps_the_general_prompt(self):
         pid = local.import_text(DIARY, "diary.md")
